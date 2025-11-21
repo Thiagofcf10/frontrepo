@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthProvider';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
-import api, { fetchWithAuth } from '@/lib/api';
+import api, { fetchWithAuth, fetchWithApiKey } from '@/lib/api';
 import Toast from '@/components/Toast';
 
 export default function CriarProjetoPage() {
@@ -12,12 +12,14 @@ export default function CriarProjetoPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     nome_projeto: '',
-    orientador: user?.id || '',
+    orientador: '',
     coorientador: '',
-    matricula_alunos: ''
+    matricula_alunos: '',
+    published: false
   });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
+  const [professores, setProfessores] = useState([]);
 
   useEffect(() => {
     if (!token) {
@@ -27,6 +29,24 @@ export default function CriarProjetoPage() {
     if (user?.tipo !== 'professor') {
       router.push('/home');
     }
+
+    // load list of professors for the orientador select
+    (async () => {
+      try {
+        const apiKey = api.getApiKey();
+        const resp = await fetchWithApiKey(`${api.getApiUrl()}/selectprofessor?api_key=${apiKey}`);
+        const data = resp && resp.data ? resp.data : [];
+        setProfessores(data || []);
+
+        // default orientador to current user id when available
+        if (user && user.id) {
+          setFormData(prev => ({ ...prev, orientador: String(user.id) }));
+        }
+      } catch (err) {
+        // ignore load errors, keep empty list
+        setProfessores([]);
+      }
+    })();
   }, [token, user]);
 
   const handleChange = (e) => {
@@ -42,9 +62,20 @@ export default function CriarProjetoPage() {
     setLoading(true);
 
     try {
+      const payload = { ...formData };
+      // if orientador is an empty string (user didn't select), remove it so server middleware
+      // can set orientador = authenticated user id
+      if (payload.orientador === '') delete payload.orientador;
+      if (payload.published) {
+        const d = new Date();
+        payload.published_at = d.toISOString().slice(0,19).replace('T', ' ');
+      } else {
+        payload.published_at = null;
+      }
+
       const res = await fetchWithAuth(`${api.getApiUrl()}/inserirprojeto`, {
         method: 'POST',
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       setToast({ type: 'success', message: 'Projeto criado com sucesso!' });
@@ -80,17 +111,21 @@ export default function CriarProjetoPage() {
               />
             </div>
 
+            {/* Orientador é preenchido automaticamente com o usuário autenticado */}
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Orientador (ID do Professor) *</label>
-              <input
-                type="number"
+              <label className="block text-sm font-medium text-gray-700 mb-1">Orientador</label>
+              <select
                 name="orientador"
                 value={formData.orientador}
                 onChange={handleChange}
-                required
-                placeholder="ID do professor orientador"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              >
+                <option value="">-- Selecionar orientador (opcional) --</option>
+                {professores.map(p => (
+                  <option key={p.id} value={p.id}>{p.nome_professor || p.nome || `ID ${p.id}`}</option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -115,6 +150,11 @@ export default function CriarProjetoPage() {
                 rows="3"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input id="published" name="published" type="checkbox" checked={formData.published} onChange={(e) => setFormData(prev => ({ ...prev, published: e.target.checked }))} />
+              <label htmlFor="published" className="text-sm text-gray-700">Publicar projeto imediatamente</label>
             </div>
 
             <div className="flex gap-2 pt-4">

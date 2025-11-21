@@ -29,15 +29,12 @@ export default function MeusProjetosAlunoPage() {
   const loadDados = async () => {
     setLoading(true);
     try {
-      // Carregar todos os projetos
-      const todosRes = await fetchWithApiKey(`${api.getApiUrl()}/selectprojetos`);
-      setProjetos(todosRes.data || []);
-
-      // Carregar projetos do usuário
+      // Fetch projects for this aluno (backend will map by student's matricula)
       if (user?.id) {
         try {
-          const meusRes = await fetchWithApiKey(`${api.getApiUrl()}/selectusuario_projetos/${user.id}`);
-          setMeusProjetos(meusRes.data || []);
+          const res = await fetchWithApiKey(`${api.getApiUrl()}/selectmeusprojetos/${user.id}?tipo=aluno`);
+          // endpoint returns project rows already
+          setProjetos(res.data || []);
         } catch (err) {
           console.error('Erro ao carregar meus projetos:', err);
         }
@@ -60,19 +57,16 @@ export default function MeusProjetosAlunoPage() {
           <div className="text-center py-12">
             <div className="text-2xl">⏳ Carregando...</div>
           </div>
-        ) : meusProjetos.length === 0 ? (
+        ) : projetos.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <p>Você não está vinculado a nenhum projeto ainda.</p>
             <p className="mt-2 text-sm">Procure por projetos disponíveis na página inicial.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {meusProjetos.map(up => {
-              const projeto = projetos.find(p => p.id === up.projeto_id);
-              return projeto ? (
-                <ProjetoCard key={up.id} projeto={projeto} />
-              ) : null;
-            })}
+            {projetos.map(p => (
+              <ProjetoCard key={p.id} projeto={p} />
+            ))}
           </div>
         )}
       </main>

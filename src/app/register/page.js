@@ -125,33 +125,53 @@ export default function RegisterPage() {
     setMsg('');
 
     try {
-      // 1. Criar usuário
-      const userRes = await fetch(`${api.getApiUrl()}/inserirusuario`, {
+      // 1. Criar usuário via endpoint público /register
+      const registerRes = await fetch(`${api.getApiUrl()}/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nome_usuario: formData.nome_usuario,
           email: formData.email,
-          password: formData.password,
-          ativo: true,
-          tipo: formData.tipo // Adicionar tipo ao usuário
+          password: formData.password
         })
       });
 
-      if (!userRes.ok) {
-        const userData = await userRes.json();
-        throw new Error(userData.error || 'Erro ao criar usuário');
+      if (!registerRes.ok) {
+        const errData = await registerRes.json().catch(() => ({}));
+        throw new Error(errData.error || 'Erro ao criar usuário');
       }
 
-      const userData = await userRes.json();
-      const usuarioId = userData.id;
+      const createdUser = await registerRes.json();
 
-      // 2. Criar aluno ou professor vinculado
+      // 2. Fazer login automaticamente para obter token e user id (necessário para criar aluno/professor)
+      const loginRes = await fetch(`${api.getApiUrl()}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, password: formData.password })
+      });
+
+      if (!loginRes.ok) {
+        const errData = await loginRes.json().catch(() => ({}));
+        throw new Error(errData.error || 'Erro ao efetuar login automático');
+      }
+
+      const loginData = await loginRes.json();
+      const tokenNew = loginData.token;
+      // Salvar token no localStorage para uso posterior
+      if (tokenNew) {
+        localStorage.setItem('token', tokenNew);
+      }
+
+      const usuarioId = loginData.user?.id || createdUser.user?.id || createdUser.id;
+
+      // 3. Criar aluno ou professor vinculado usando token
+      const authHeaders = { 'Content-Type': 'application/json' };
+      if (tokenNew) authHeaders['Authorization'] = `Bearer ${tokenNew}`;
+
       if (formData.tipo === 'aluno') {
         const alunoRes = await fetch(`${api.getApiUrl()}/inseriraluno`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+          headers: authHeaders,
           credentials: 'include',
           body: JSON.stringify({
             nome_aluno: formData.nome_usuario,
@@ -163,12 +183,13 @@ export default function RegisterPage() {
         });
 
         if (!alunoRes.ok) {
-          throw new Error('Erro ao criar registro de aluno');
+          const e = await alunoRes.json().catch(() => ({}));
+          throw new Error(e.error || 'Erro ao criar registro de aluno');
         }
       } else if (formData.tipo === 'professor') {
         const professorRes = await fetch(`${api.getApiUrl()}/inserirprofessor`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+          headers: authHeaders,
           credentials: 'include',
           body: JSON.stringify({
             nome_professor: formData.nome_usuario,
@@ -180,15 +201,17 @@ export default function RegisterPage() {
         });
 
         if (!professorRes.ok) {
-          throw new Error('Erro ao criar registro de professor');
+          const e = await professorRes.json().catch(() => ({}));
+          throw new Error(e.error || 'Erro ao criar registro de professor');
         }
       }
 
       setMsgType('success');
-      setMsg('Cadastro realizado com sucesso! Redirecionando para login...');
+      setMsg('Cadastro realizado com sucesso! Você já foi autenticado e será redirecionado...');
+
       setTimeout(() => {
-        router.push('/login');
-      }, 2000);
+        router.push('/home');
+      }, 1500);
     } catch (err) {
       setMsgType('error');
       setMsg(err.message || 'Erro ao registrar');
@@ -260,7 +283,7 @@ export default function RegisterPage() {
             <h2 className="text-lg font-semibold mb-4">Qual é seu perfil?</h2>
             <button
               type="button"
-              onClick={() => setFormData({ ...formData, tipo: 'aluno' })}
+              onClick={() => setFormData(prev => ({ ...prev, tipo: 'aluno' }))}
               className={`w-full p-4 border-2 rounded-lg text-left transition ${
                 formData.tipo === 'aluno'
                   ? 'border-blue-500 bg-blue-50'
@@ -272,7 +295,7 @@ export default function RegisterPage() {
             </button>
             <button
               type="button"
-              onClick={() => setFormData({ ...formData, tipo: 'professor' })}
+              onClick={() => setFormData(prev => ({ ...prev, tipo: 'professor' }))}
               className={`w-full p-4 border-2 rounded-lg text-left transition ${
                 formData.tipo === 'professor'
                   ? 'border-blue-500 bg-blue-50'

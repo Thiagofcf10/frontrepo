@@ -26,6 +26,7 @@ export default function ArquivosPage() {
     bibliografia: ''
   });
   const [file, setFile] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     if (!token) {
@@ -96,8 +97,7 @@ export default function ArquivosPage() {
     try {
       const fd = new FormData();
       fd.append('arquivo', file);
-      fd.append('projeto_id', selectedProjetoId);
-      fd.append('id_meuprojeto', '1'); // Valor padrão para compatibilidade
+  fd.append('projeto_id', selectedProjetoId);
       fd.append('resumo', formData.resumo);
       fd.append('justificativa', formData.justificativa);
       fd.append('objetivo', formData.objetivo);
@@ -128,6 +128,57 @@ export default function ArquivosPage() {
       loadArquivos(selectedProjetoId);
     } catch (err) {
       setToast({ type: 'error', message: err.message || 'Erro ao enviar arquivo' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Submit handler for updating metadata when editingId is set
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!editingId) return;
+    setUploading(true);
+    try {
+      // always send multipart/form-data so the backend multer middleware can
+      // handle an optional file replacement. If no file was chosen, we still
+      // send the metadata fields as text parts.
+      const fd = new FormData();
+      if (file) fd.append('arquivo', file);
+      fd.append('resumo', formData.resumo || '');
+      fd.append('justificativa', formData.justificativa || '');
+      fd.append('objetivo', formData.objetivo || '');
+      fd.append('sumario', formData.sumario || '');
+      fd.append('introducao', formData.introducao || '');
+      fd.append('bibliografia', formData.bibliografia || '');
+      fd.append('projeto_id', selectedProjetoId);
+
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${api.getApiUrl()}/atualizararquivo/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: fd
+      });
+
+      if (!res.ok) {
+        // try to extract a helpful message
+        let errText = 'Erro ao atualizar arquivo';
+        try {
+          const json = await res.json();
+          errText = json.error || json.message || errText;
+        } catch (parseErr) {
+          const text = await res.text().catch(() => null);
+          if (text) errText = text;
+        }
+        throw new Error(errText);
+      }
+
+      setToast({ type: 'success', message: 'Arquivo atualizado com sucesso' });
+      setEditingId(null);
+      setFile(null);
+      loadArquivos(selectedProjetoId);
+    } catch (err) {
+      const text = (err && err.message) ? err.message : 'Erro ao atualizar arquivo';
+      setToast({ type: 'error', message: text });
     } finally {
       setUploading(false);
     }
@@ -274,13 +325,38 @@ export default function ArquivosPage() {
                       />
                     </div>
 
-                    <button
-                      type="submit"
-                      disabled={uploading}
-                      className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded font-semibold disabled:opacity-50"
-                    >
-                      {uploading ? 'Enviando...' : '📤 Enviar Arquivo'}
-                    </button>
+                    <div className="flex gap-2">
+                      {!editingId ? (
+                        <button
+                          type="submit"
+                          disabled={uploading}
+                          className="flex-1 bg-sky-700 hover:bg-sky-800 text-white py-2 rounded font-semibold disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400"
+                          aria-label="Enviar arquivo"
+                          title="Enviar arquivo"
+                        >
+                          {uploading ? 'Enviando...' : '📤 Enviar Arquivo'}
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={handleUpdate}
+                            className="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white py-2 rounded font-semibold disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-300"
+                            aria-label="Atualizar arquivo"
+                            title="Atualizar arquivo"
+                          >
+                            {uploading ? 'Atualizando...' : '✏️ Atualizar Arquivo'}
+                          </button>
+                          <button
+                            onClick={(ev) => { ev.preventDefault(); setEditingId(null); setFile(null); setFormData(prev => ({ ...prev })); }}
+                            className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-300"
+                            aria-label="Cancelar edição"
+                            title="Cancelar edição"
+                          >
+                            Cancelar
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </form>
                 </div>
 
@@ -297,12 +373,39 @@ export default function ArquivosPage() {
                             <p className="font-semibold text-sm">📄 {arquivo.nome_arquivo}</p>
                             <p className="text-xs text-gray-600 mt-1">{arquivo.resumo}</p>
                           </div>
-                          <button
-                            onClick={() => handleDeleteArquivo(arquivo.id)}
-                            className="ml-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
-                          >
-                            🗑️
-                          </button>
+                          <div className="flex flex-col gap-2">
+                            <button
+                              onClick={() => handleDeleteArquivo(arquivo.id)}
+                              className="ml-2 bg-rose-700 hover:bg-rose-800 text-white px-2 py-1 rounded text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-rose-300"
+                              aria-label={`Deletar arquivo ${arquivo.nome_arquivo || ''}`}
+                              title={`Deletar ${arquivo.nome_arquivo || ''}`}
+                            >
+                              🗑️
+                            </button>
+                            <button
+                              onClick={() => {
+                                // populate form for editing
+                                setEditingId(arquivo.id);
+                                setSelectedProjetoId(String(arquivo.projeto_id || arquivo.id_meuprojeto || ''));
+                                setFormData(prev => ({
+                                  ...prev,
+                                  resumo: arquivo.resumo || '',
+                                  justificativa: arquivo.justificativa || '',
+                                  objetivo: arquivo.objetivo || '',
+                                  sumario: arquivo.sumario || '',
+                                  introducao: arquivo.introducao || '',
+                                  bibliografia: arquivo.bibliografia || ''
+                                }));
+                                // don't override file input unless user selects a new file
+                                setFile(null);
+                              }}
+                              className="ml-2 bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-300"
+                              aria-label={`Editar arquivo ${arquivo.nome_arquivo || ''}`}
+                              title={`Editar ${arquivo.nome_arquivo || ''}`}
+                            >
+                              ✏️ Editar
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>

@@ -32,7 +32,10 @@ export function AuthProvider({ children }) {
         (async () => {
           try {
             const res = await fetchWithAuth('/verify');
-            setUser(res.user || res);
+            // enrich with role (professor/aluno) if possible
+            const basic = res.user || res;
+            const enriched = await enrichUserRole(basic);
+            setUser(enriched);
           } catch (err) {
             // invalid token
             setTokenState(null);
@@ -61,9 +64,52 @@ export function AuthProvider({ children }) {
     if (data.token) {
       apiSetToken(data.token);
       setTokenState(data.token);
-      setUser(data.user || null);
+      // enrich user with role
+      const enriched = await enrichUserRole(data.user || null);
+      setUser(enriched || data.user || null);
     }
     return data;
+  }
+
+  async function refreshUser() {
+    try {
+      const res = await fetchWithAuth('/verify');
+      const basic = res.user || res;
+      const enriched = await enrichUserRole(basic);
+      setUser(enriched);
+      return enriched;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Determine if user is linked to a professor or aluno record
+  async function enrichUserRole(basicUser) {
+    if (!basicUser || !basicUser.id) return basicUser;
+    try {
+      // fetch public lists and check for match on usuario_id
+      const apiUrl = api.getApiUrl();
+      const apiKey = api.getApiKey();
+      // Try professores first
+      const profResp = await fetch(`${apiUrl}/selectprofessor?api_key=${apiKey}`);
+      const profJson = await profResp.json().catch(() => null);
+      if (profJson && Array.isArray(profJson.data)) {
+        const found = profJson.data.find(p => Number(p.usuario_id) === Number(basicUser.id));
+        if (found) return { ...basicUser, tipo: 'professor', professorId: found.id };
+      }
+
+      // Try alunos
+      const alunoResp = await fetch(`${apiUrl}/selectaluno?api_key=${apiKey}`);
+      const alunoJson = await alunoResp.json().catch(() => null);
+      if (alunoJson && Array.isArray(alunoJson.data)) {
+        const foundA = alunoJson.data.find(a => Number(a.usuario_id) === Number(basicUser.id));
+        if (foundA) return { ...basicUser, tipo: 'aluno', alunoId: foundA.id };
+      }
+
+      return { ...basicUser, tipo: null };
+    } catch (e) {
+      return { ...basicUser, tipo: null };
+    }
   }
 
   function logout() {
@@ -79,7 +125,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

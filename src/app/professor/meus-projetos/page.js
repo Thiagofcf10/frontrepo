@@ -30,10 +30,9 @@ export default function MeusProjetosPage() {
   const loadMeusProjetos = async () => {
     setLoading(true);
     try {
-      // Se professor é orientador (projeto.orientador === user.id)
-      const res = await fetchWithApiKey(`${api.getApiUrl()}/selectprojetos`);
-      const meus = (res.data || []).filter(p => p.orientador === user?.id);
-      setProjetos(meus);
+      // Fetch role-aware meus projetos from backend (only projects where user is orientador)
+      const res = await fetchWithApiKey(`${api.getApiUrl()}/selectmeusprojetos/${user.id}?tipo=professor`);
+      setProjetos(res.data || []);
     } catch (err) {
       console.error('Erro ao carregar projetos:', err);
       setToast({ type: 'error', message: 'Erro ao carregar projetos' });

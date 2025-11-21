@@ -29,13 +29,22 @@ export default function Navbar() {
           <h1 className="text-xl font-bold">IFPA Projetos</h1>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm">👤 {user?.nome_usuario || 'Usuário'}</span>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm"
-          >
-            Sair
-          </button>
+          {user ? (
+            <>
+              <span className="text-sm">👤 {user.nome_usuario}</span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm"
+              >
+                Sair
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium">Entrar</Link>
+              <Link href="/register" className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium">Registrar</Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -47,6 +56,9 @@ export default function Navbar() {
       >
         <div className="flex flex-col gap-2">
           {/* Menu comum para todos */}
+          <Link href="/perfil" className="hover:bg-gray-700 p-2 rounded">
+            👤 Perfil
+          </Link>
           <Link href="/home" className="hover:bg-gray-700 p-2 rounded">
             🏠 Home
           </Link>
@@ -61,6 +73,20 @@ export default function Navbar() {
               <h3 className="text-xs uppercase tracking-widest text-gray-400">
                 Professor
               </h3>
+              {/* Dados acadêmicos - seção separada */}
+              <div className="mt-2">
+                <h4 className="text-xs uppercase tracking-widest text-gray-400 mt-2">Dados Acadêmicos</h4>
+                <Link href="/professor/gerenciar-dados" className="hover:bg-gray-700 p-2 rounded text-sm">
+                  🧾 Gerenciar Dados
+                </Link>
+              </div>
+                  <Link href="/professor/gerenciar-projetos" className="hover:bg-gray-700 p-2 rounded text-sm">
+                    🗂️ Gerenciar Projetos
+                  </Link>
+              {/* Admin link visible only to professors (opens backend admin UI) */}
+              <Link href="/admin" className="hover:bg-gray-700 p-2 rounded text-sm">
+                🛠️ Admin
+              </Link>
               <Link href="/professor/criar-projeto" className="hover:bg-gray-700 p-2 rounded text-sm">
                 ➕ Novo Projeto
               </Link>
