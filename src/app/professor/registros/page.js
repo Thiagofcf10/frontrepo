@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthProvider';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Modal from '@/components/Modal';
-import api, { fetchWithAuth, fetchWithApiKey } from '@/lib/api';
+import api, { fetchWithAuth, fetchWithApiKey, getApiKey, getToken } from '@/lib/api';
 import Toast from '@/components/Toast';
 
 export default function RegistrosPage() {
@@ -22,7 +22,8 @@ export default function RegistrosPage() {
     data_reuniao: '',
     lista_participantes: '',
     duracao_reuniao: '00:00:00',
-    titulo_reuniao: ''
+    titulo_reuniao: '',
+    relatorio: ''
   });
 
   useEffect(() => {
@@ -92,7 +93,8 @@ export default function RegistrosPage() {
           data_reuniao: formData.data_reuniao,
           lista_participantes: formData.lista_participantes,
           duracao_reuniao: formData.duracao_reuniao,
-          titulo_reuniao: formData.titulo_reuniao
+          titulo_reuniao: formData.titulo_reuniao,
+          relatorio: formData.relatorio
         })
       });
 
@@ -103,6 +105,7 @@ export default function RegistrosPage() {
         lista_participantes: '',
         duracao_reuniao: '00:00:00',
         titulo_reuniao: ''
+        , relatorio: ''
       });
       setModalOpen(false);
       loadRegistros(selectedProjetoId);
@@ -123,6 +126,47 @@ export default function RegistrosPage() {
       loadRegistros(selectedProjetoId);
     } catch (err) {
       setToast({ type: 'error', message: err.message || 'Erro ao deletar registro' });
+    }
+  };
+
+  const handleDownloadRelatorio = async (projetoId) => {
+    if (!projetoId) {
+      setToast({ type: 'error', message: 'Selecione um projeto antes de baixar o relatório' });
+      return;
+    }
+
+    try {
+      const url = `${api.getApiUrl()}/selectregistros_txt?projeto_id=${projetoId}`;
+      const token = getToken();
+      const res = await fetch(url, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : ''
+        },
+        credentials: 'include'
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || 'Erro ao baixar relatório');
+      }
+
+      const blob = await res.blob();
+      const disposition = res.headers.get('content-disposition') || '';
+      let filename = `registros_projeto_${projetoId}.txt`;
+      const match = disposition.match(/filename\*=UTF-8''(.+)|filename=\"?([^\";]+)\"?/);
+      if (match) filename = decodeURIComponent(match[1] || match[2]);
+
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+      setToast({ type: 'success', message: 'Download iniciado' });
+    } catch (err) {
+      setToast({ type: 'error', message: err.message || 'Erro ao baixar relatório' });
     }
   };
 
@@ -167,6 +211,14 @@ export default function RegistrosPage() {
                   className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold"
                 >
                   ➕ Registrar Nova Reunião
+                </button>
+
+                {/* Botão de baixar relatório geral do projeto */}
+                <button
+                  onClick={() => handleDownloadRelatorio(selectedProjetoId)}
+                  className="ml-3 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold"
+                >
+                  ⬇️ Baixar Relatório do Projeto
                 </button>
 
                 {/* Lista de Registros */}
@@ -253,6 +305,17 @@ export default function RegistrosPage() {
                 onChange={handleChange}
                 placeholder="Nomes dos participantes (separados por vírgula)"
                 rows="2"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Relatório</label>
+              <textarea
+                name="relatorio"
+                value={formData.relatorio}
+                onChange={handleChange}
+                placeholder="Escreva o relatório da reunião aqui"
+                rows="4"
                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

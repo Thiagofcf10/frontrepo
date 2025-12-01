@@ -27,20 +27,20 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
+    <div className="min-h-screen bg-gradient-to-b from-cyan-100 via-sky-50 to-white">
+      <header className="bg-cyan-800 shadow">
         <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-sky-600 rounded flex items-center justify-center text-white text-2xl font-bold">IF</div>
+            <div className="w-12 h-12 bg-green-600 rounded flex items-center justify-center text-white text-2xl font-bold">IF</div>
             <div>
-              <h1 className="text-xl font-bold">Repositório IFPA</h1>
-              <p className="text-sm text-gray-500">Projetos acadêmicos do IFPA</p>
+              <h1 className="text-xl font-bold text-white">Repositório IFPA</h1>
+              <p className="text-sm text-cyan-200">Projetos acadêmicos do IFPA</p>
             </div>
           </div>
 
           <nav className="flex items-center gap-3">
-            <Link href="/login" className="px-4 py-2 border border-sky-600 text-sky-600 rounded hover:bg-sky-50">Entrar</Link>
-            <Link href="/register" className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Registrar</Link>
+            <Link href="/login" className="px-4 py-2 border border-green-600 text-green-600 rounded hover:bg-green-100">Entrar</Link>
+            <Link href="/register" className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Registrar</Link>
           </nav>
         </div>
       </header>
@@ -48,17 +48,17 @@ export default function LandingPage() {
       <main className="max-w-6xl mx-auto px-6 py-12">
         <section className="grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <h2 className="text-3xl font-bold mb-4">Bem-vindo ao Repositório IFPA</h2>
-            <p className="text-gray-700 mb-4">Aqui você encontra projetos publicados pelos nossos docentes e discentes. Explore, baixe arquivos e confira os custos associados aos projetos.</p>
+            <h2 className="text-3xl font-bold mb-4 text-green-700">Bem-vindo ao Repositório IFPA</h2>
+            <p className="text-gray-800 mb-4">Aqui você encontra projetos publicados pelos nossos docentes e discentes. Explore, baixe arquivos e confira os custos associados aos projetos.</p>
             <div className="flex gap-3">
-              <Link href="/projetos" className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Ver Projetos</Link>
-              <Link href="/register" className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100">Criar Conta</Link>
+              <Link href="/projetos" className="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-800">Ver Projetos</Link>
+              <Link href="/register" className="px-4 py-2 border border-gray-400 rounded hover:bg-gray-200 text-green-700">Criar Conta</Link>
             </div>
           </div>
-          <div className="bg-white rounded shadow p-6">
-            <h3 className="text-lg font-semibold mb-3">Projetos publicados</h3>
+          <div className="bg-white rounded shadow p-6 border border-green-200">
+            <h3 className="text-lg font-semibold mb-3 text-green-700">Projetos publicados</h3>
             {loading ? (
-              <div className="text-center py-8">⏳ Carregando projetos públicos...</div>
+              <div className="text-center py-8 text-green-500">⏳ Carregando projetos públicos...</div>
             ) : projetos.length === 0 ? (
               <div className="text-gray-500">Nenhum projeto publicado ainda.</div>
             ) : (
@@ -72,31 +72,31 @@ export default function LandingPage() {
         </section>
 
         <section className="mt-12">
-          <h3 className="text-2xl font-bold mb-4">Como usar</h3>
+          <h3 className="text-2xl font-bold mb-4 text-green-700">Como usar</h3>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white rounded shadow p-4">
-              <h4 className="font-semibold">Pesquisar</h4>
-              <p className="text-sm text-gray-600">Encontre projetos por título, orientador ou palavras-chave.</p>
+            <div className="bg-white rounded shadow p-4 border border-green-100">
+              <h4 className="font-semibold text-green-700">Pesquisar</h4>
+              <p className="text-sm text-gray-700">Encontre projetos por título, orientador ou palavras-chave.</p>
             </div>
-            <div className="bg-white rounded shadow p-4">
-              <h4 className="font-semibold">Baixar</h4>
-              <p className="text-sm text-gray-600">Faça download dos arquivos associados aos projetos.</p>
+            <div className="bg-white rounded shadow p-4 border border-green-100">
+              <h4 className="font-semibold text-green-700">Baixar</h4>
+              <p className="text-sm text-gray-700">Faça download dos arquivos associados aos projetos.</p>
             </div>
-            <div className="bg-white rounded shadow p-4">
-              <h4 className="font-semibold">Contribuir</h4>
-              <p className="text-sm text-gray-600">Professores podem publicar novos projetos e gerenciar custos e arquivos.</p>
+            <div className="bg-white rounded shadow p-4 border border-green-100">
+              <h4 className="font-semibold text-green-700">Contribuir</h4>
+              <p className="text-sm text-gray-700">Professores podem publicar novos projetos e gerenciar custos e arquivos.</p>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="bg-white border-t mt-12">
+      <footer className="bg-cyan-900 border-t mt-12">
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-sm text-gray-600">© {new Date().getFullYear()} Repositório IFPA — Todos os direitos reservados</div>
+          <div className="text-sm text-cyan-100">© {new Date().getFullYear()} Repositório IFPA — Todos os direitos reservados</div>
           <div className="flex gap-4 mt-4 md:mt-0">
-            <Link href="/about" className="text-sm text-gray-600 hover:underline">Sobre</Link>
-            <Link href="/contact" className="text-sm text-gray-600 hover:underline">Contato</Link>
-            <a href="#" className="text-sm text-gray-600 hover:underline">Política de Privacidade</a>
+            <Link href="/about" className="text-sm text-cyan-100 hover:underline">Sobre</Link>
+            <Link href="/contact" className="text-sm text-cyan-100 hover:underline">Contato</Link>
+            <a href="#" className="text-sm text-cyan-100 hover:underline">Política de Privacidade</a>
           </div>
         </div>
       </footer>

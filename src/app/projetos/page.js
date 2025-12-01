@@ -34,22 +34,24 @@ export default function ProjetosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 to-blue-200 flex">
       <Navbar />
-      
-      <main className="flex-1 p-6">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">📋 Projetos</h1>
+
+      <main className="flex-1 p-8">
+        <h1 className="text-4xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-violet-500 animate-pulse">
+          📋 Projetos
+        </h1>
 
         {loading ? (
-          <div className="text-center py-12">
-            <div className="text-2xl">⏳ Carregando...</div>
+          <div className="text-center py-16">
+            <div className="text-3xl text-blue-600">⏳ Carregando...</div>
           </div>
         ) : projetos.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <p>Nenhum projeto disponível.</p>
+          <div className="text-center py-16 text-gray-600">
+            <p className="text-xl text-yellow-700 font-semibold">Nenhum projeto disponível.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projetos.map(projeto => (
               <ProjetoCard key={projeto.id} projeto={projeto} />
             ))}

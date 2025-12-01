@@ -64,7 +64,7 @@ export function AuthProvider({ children }) {
     if (data.token) {
       apiSetToken(data.token);
       setTokenState(data.token);
-      // enrich user with role
+      // enrich user with role (login may already include role)
       const enriched = await enrichUserRole(data.user || null);
       setUser(enriched || data.user || null);
     }
@@ -86,6 +86,13 @@ export function AuthProvider({ children }) {
   // Determine if user is linked to a professor or aluno record
   async function enrichUserRole(basicUser) {
     if (!basicUser || !basicUser.id) return basicUser;
+    // If backend already provided a role in the token/user payload, respect it
+    if (basicUser.role) {
+      if (basicUser.role === 'professor') return { ...basicUser, tipo: 'professor' };
+      if (basicUser.role === 'aluno') return { ...basicUser, tipo: 'aluno' };
+      if (basicUser.role === 'guest') return { ...basicUser, tipo: 'guest' };
+      return { ...basicUser, tipo: null };
+    }
     try {
       // fetch public lists and check for match on usuario_id
       const apiUrl = api.getApiUrl();
