@@ -11,6 +11,7 @@ export default function ArquivosPage() {
   const { user, token } = useAuth();
   const router = useRouter();
   const [projetos, setProjetos] = useState([]);
+  const [projectSearch, setProjectSearch] = useState('');
   const [arquivos, setArquivos] = useState([]);
   const [selectedProjetoId, setSelectedProjetoId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -219,8 +220,11 @@ export default function ArquivosPage() {
             {/* Seletor de Projeto */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold mb-3">Selecione um Projeto</h2>
+              <div className="mb-3">
+                <input value={projectSearch} onChange={(e) => setProjectSearch(e.target.value)} placeholder="Pesquisar projeto por nome..." className="w-full px-3 py-2 border border-gray-300 rounded" />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {projetos.map(projeto => (
+                {projetos.filter(p => !projectSearch || String(p.nome_projeto || '').toLowerCase().includes(projectSearch.toLowerCase())).map(projeto => (
                   <button
                     key={projeto.id}
                     onClick={() => handleSelectProjeto(projeto.id)}

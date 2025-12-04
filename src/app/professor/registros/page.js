@@ -12,6 +12,7 @@ export default function RegistrosPage() {
   const { user, token } = useAuth();
   const router = useRouter();
   const [projetos, setProjetos] = useState([]);
+  const [projectSearch, setProjectSearch] = useState('');
   const [registros, setRegistros] = useState([]);
   const [selectedProjetoId, setSelectedProjetoId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ export default function RegistrosPage() {
     titulo_reuniao: '',
     relatorio: ''
   });
+  const [expandedRegistros, setExpandedRegistros] = useState(new Set());
 
   useEffect(() => {
     if (!token) {
@@ -94,7 +96,9 @@ export default function RegistrosPage() {
           lista_participantes: formData.lista_participantes,
           duracao_reuniao: formData.duracao_reuniao,
           titulo_reuniao: formData.titulo_reuniao,
-          relatorio: formData.relatorio
+          relatorio: formData.relatorio,
+          relatorio_edit_deadline: formData.relatorio_edit_deadline || null,
+          relatorio_edit_allowed: formData.relatorio_edit_allowed || null
         })
       });
 
@@ -186,8 +190,11 @@ export default function RegistrosPage() {
             {/* Seletor de Projeto */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold mb-3">Selecione um Projeto</h2>
+              <div className="mb-3">
+                <input value={projectSearch} onChange={(e) => setProjectSearch(e.target.value)} placeholder="Pesquisar projeto por nome..." className="w-full px-3 py-2 border border-gray-300 rounded" />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {projetos.map(projeto => (
+                {projetos.filter(p => !projectSearch || String(p.nome_projeto || '').toLowerCase().includes(projectSearch.toLowerCase())).map(projeto => (
                   <button
                     key={projeto.id}
                     onClick={() => handleSelectProjeto(projeto.id)}
@@ -228,24 +235,48 @@ export default function RegistrosPage() {
                     <p className="text-gray-500">Nenhuma reunião registrada ainda.</p>
                   ) : (
                     <div className="space-y-3">
-                      {registros.map(registro => (
-                        <div key={registro.id} className="border border-gray-200 rounded p-4 flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="font-semibold">{registro.titulo_reuniao}</h3>
-                            <p className="text-sm text-gray-600">📅 {new Date(registro.data_reuniao).toLocaleDateString('pt-BR')}</p>
-                            <p className="text-sm text-gray-600">⏱️ Duração: {registro.duracao_reuniao}</p>
-                            {registro.lista_participantes && (
-                              <p className="text-sm text-gray-600">👥 Participantes: {registro.lista_participantes}</p>
-                            )}
+                      {registros.map(registro => {
+                        const isExpanded = expandedRegistros.has(registro.id);
+                        const short = registro.relatorio && registro.relatorio.length > 200 ? registro.relatorio.slice(0, 200) + '...' : registro.relatorio;
+                        return (
+                          <div key={registro.id} className="border border-gray-200 rounded p-4 flex justify-between items-start">
+                            <div className="flex-1">
+                              <h3 className="font-semibold">{registro.titulo_reuniao}</h3>
+                              <p className="text-sm text-gray-600">📅 {new Date(registro.data_reuniao).toLocaleDateString('pt-BR')}</p>
+                              <p className="text-sm text-gray-600">⏱️ Duração: {registro.duracao_reuniao}</p>
+                              {registro.lista_participantes && (
+                                <p className="text-sm text-gray-600">👥 Participantes: {registro.lista_participantes}</p>
+                              )}
+                              {registro.relatorio && (
+                                <div className="mt-2">
+                                  <p className="text-sm text-gray-700 whitespace-pre-line">{isExpanded ? registro.relatorio : short}</p>
+                                  {registro.relatorio.length > 200 && (
+                                    <button
+                                      onClick={() => {
+                                        const s = new Set(expandedRegistros);
+                                        if (s.has(registro.id)) s.delete(registro.id);
+                                        else s.add(registro.id);
+                                        setExpandedRegistros(s);
+                                      }}
+                                      className="mt-1 text-sm text-sky-600 underline"
+                                    >
+                                      {isExpanded ? 'Ver menos' : 'Ver relatório completo'}
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex flex-col gap-2 ml-2">
+                              <button
+                                onClick={() => handleDeleteRegistro(registro.id)}
+                                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                              >
+                                🗑️ Deletar
+                              </button>
+                            </div>
                           </div>
-                          <button
-                            onClick={() => handleDeleteRegistro(registro.id)}
-                            className="ml-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
-                          >
-                            🗑️ Deletar
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -316,6 +347,28 @@ export default function RegistrosPage() {
                 onChange={handleChange}
                 placeholder="Escreva o relatório da reunião aqui"
                 rows="4"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Prazo para edição do relatório (opcional)</label>
+              <input
+                type="datetime-local"
+                name="relatorio_edit_deadline"
+                value={formData.relatorio_edit_deadline || ''}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">Se definido, apenas alunos listados poderão editar até essa data/hora.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Alunos permitidos (matrículas ou IDs, separados por vírgula)</label>
+              <input
+                type="text"
+                name="relatorio_edit_allowed"
+                value={formData.relatorio_edit_allowed || ''}
+                onChange={handleChange}
+                placeholder="ex: 2023001,2023002 ou 12,15"
                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

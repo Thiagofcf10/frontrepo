@@ -1,4 +1,4 @@
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://backend2-xi-puce.vercel.app').replace(/\/+$/, '');
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'ifpa_public_api_key_2025';
 
 export function getApiUrl() {

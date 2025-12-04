@@ -30,9 +30,30 @@ export default function MeusProjetosPage() {
   const loadMeusProjetos = async () => {
     setLoading(true);
     try {
-      // Fetch role-aware meus projetos from backend (only projects where user is orientador)
-      const res = await fetchWithApiKey(`${api.getApiUrl()}/selectmeusprojetos/${user.id}?tipo=professor`);
-      setProjetos(res.data || []);
+      // Fetch all projects then filter by orientador name matching the current user
+      const res = await fetchWithApiKey(`${api.getApiUrl()}/selectprojetos`);
+      const projetosData = res.data || [];
+
+      // Fetch professors to map orientador id -> nome
+      let profMap = {};
+      try {
+        const presp = await fetchWithApiKey(`${api.getApiUrl()}/selectprofessor`);
+        const profs = presp && presp.data ? presp.data : [];
+        profs.forEach(p => { if (p && p.id) profMap[p.id] = p.nome_professor || p.nome || String(p.id); });
+      } catch (e) {
+        // ignore
+      }
+
+      // Filter projects where the orientador name matches the logged-in user's name (loose match)
+      const filtered = projetosData.filter(p => {
+        const orientadorNome = profMap[p.orientador] || p.orientadorNome || String(p.orientador);
+        if (!orientadorNome) return false;
+        const left = String(orientadorNome).toLowerCase();
+        const right = String(user.nome_usuario || user.nome || '').toLowerCase();
+        return left.includes(right) || right.includes(left) || left === right;
+      });
+
+      setProjetos(filtered);
     } catch (err) {
       console.error('Erro ao carregar projetos:', err);
       setToast({ type: 'error', message: 'Erro ao carregar projetos' });

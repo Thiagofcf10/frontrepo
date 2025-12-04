@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthProvider';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import ProjetoCard from '@/components/ProjetoCard';
 import api, { fetchWithApiKey } from '@/lib/api';
@@ -18,6 +19,7 @@ export default function HomePage() {
   useEffect(() => {
     // Always load public projects for the home page so visitors can see published projects.
     // If a user is logged in, also attempt to load their projects.
+    // Load featured projects (selected by professors)
     loadProjetos();
   }, [token, user]);
 
@@ -26,8 +28,9 @@ export default function HomePage() {
     try {
       // Carregar apenas projetos publicados para a exibição pública da Home
       // Use o endpoint público que retorna somente projetos publicados
-      const todosRes = await fetchWithApiKey(`${api.getApiUrl()}/selectprojetos_publicos`);
-      setProjetos(todosRes.data || []);
+      // Carregar apenas projetos marcados como destaque (selecionados pelos professores)
+      const destaquesRes = await fetchWithApiKey(`${api.getApiUrl()}/selectprojetos_destaques`);
+      setProjetos(destaquesRes.data || []);
 
       // Carregar projetos do usuário (se houver) - use role-aware endpoint
       if (user?.id) {
@@ -39,6 +42,7 @@ export default function HomePage() {
           console.error('Erro ao carregar meus projetos:', err);
         }
       }
+      
     } catch (err) {
       console.error('Erro ao carregar projetos:', err);
     } finally {
@@ -49,9 +53,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Navbar />
-      
       <main className="flex-1 p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl">
           {/* Hero / header */}
           <section className="bg-white rounded-lg shadow p-6 mb-6">
             <div className="flex items-center justify-between">
@@ -63,16 +66,23 @@ export default function HomePage() {
                 {/* Perfil link moved to sidebar; removed button here per request */}
               </div>
             </div>
-            <div className="mt-4">
-              <input
-                type="search"
-                placeholder="Pesquisar projetos por nome..."
-                value={''}
-                onChange={() => {}}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                aria-label="Pesquisar projetos"
-              />
-            </div>
+            {/* search removed to match professor layout */}
+            {/* Quick admin menu (shows for logged-in professors) */}
+            {user && user.tipo === 'professor' && (
+              <section className="mt-6 bg-white rounded-lg shadow p-4">
+                <h3 className="text-lg font-semibold mb-2">Painel Rápido</h3>
+                <p className="text-sm text-gray-600 mb-4">Acesse rapidamente as páginas de cadastro e gerenciamento de projetos.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  <Link href="/professor/criar-projeto" className="px-3 py-2 bg-sky-600 text-white rounded text-sm text-center">➕ Criar Projeto</Link>
+                  <Link href="/professor/gerenciar-projetos" className="px-3 py-2 bg-amber-600 text-white rounded text-sm text-center">🛠️ Gerenciar Projetos</Link>
+                  <Link href="/professor/meus-projetos" className="px-3 py-2 bg-emerald-600 text-white rounded text-sm text-center">📚 Meus Projetos</Link>
+                  <Link href="/professor/gerenciar-destaques" className="px-3 py-2 bg-purple-600 text-white rounded text-sm text-center">⭐ Gerenciar Destaques</Link>
+                  <Link href="/professor/arquivos" className="px-3 py-2 bg-gray-600 text-white rounded text-sm text-center">📁 Arquivos</Link>
+                  <Link href="/professor/custos" className="px-3 py-2 bg-rose-600 text-white rounded text-sm text-center">💰 Custos</Link>
+                  <Link href="/professor/registros" className="px-3 py-2 bg-indigo-600 text-white rounded text-sm text-center">📝 Registros</Link>
+                </div>
+              </section>
+            )}
           </section>
 
           {/* Tabs */}
@@ -106,7 +116,7 @@ export default function HomePage() {
             </div>
           ) : activeTab === 'todos' ? (
             <section>
-              <h2 className="text-2xl font-bold mb-4">Todos os Projetos</h2>
+              <h2 className="text-2xl font-bold mb-4">Projetos em Destaque</h2>
               {projetos.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <p>Nenhum projeto disponível ainda.</p>

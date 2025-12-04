@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthProvider';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import AlunoMultiSelect from '@/components/AlunoMultiSelect';
 import api, { fetchWithAuth, fetchWithApiKey } from '@/lib/api';
 import Toast from '@/components/Toast';
+import { TIPOS_PROJETO } from '@/lib/constants';
 
 export default function CriarProjetoPage() {
   const { user, token } = useAuth();
@@ -14,12 +16,15 @@ export default function CriarProjetoPage() {
     nome_projeto: '',
     orientador: '',
     coorientador: '',
+    nome_autores: '',
     matricula_alunos: '',
+    tipo_projeto: 'Integrador',
     published: false
   });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
   const [professores, setProfessores] = useState([]);
+  const [alunos, setAlunos] = useState([]);
 
   useEffect(() => {
     if (!token) {
@@ -47,6 +52,18 @@ export default function CriarProjetoPage() {
         setProfessores([]);
       }
     })();
+
+    // load alunos for selection
+    (async () => {
+      try {
+        const apiKey = api.getApiKey();
+        const resp = await fetchWithApiKey(`${api.getApiUrl()}/selectaluno?api_key=${apiKey}`);
+        const data = resp && resp.data ? resp.data : [];
+        setAlunos(data || []);
+      } catch (e) {
+        setAlunos([]);
+      }
+    })();
   }, [token, user]);
 
   const handleChange = (e) => {
@@ -55,6 +72,19 @@ export default function CriarProjetoPage() {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleAlunoSelect = (e) => {
+    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+    // store as CSV of IDs
+    const matriculaCsv = selected.join(',');
+    // build names from alunos array
+    const names = selected.map(id => {
+      const found = alunos.find(a => String(a.id) === String(id));
+      return found ? (found.nome_aluno || found.nome || `Aluno ${id}`) : `Aluno ${id}`;
+    });
+
+    setFormData(prev => ({ ...prev, matricula_alunos: matriculaCsv, nome_autores: names.join(', ') }));
   };
 
   const handleSubmit = async (e) => {
@@ -141,15 +171,50 @@ export default function CriarProjetoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Matrículas dos Alunos</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Selecionar Alunos (matrículas)</label>
+              <AlunoMultiSelect
+                alunos={alunos}
+                value={(formData.matricula_alunos || '').split(',').filter(Boolean)}
+                onChange={(arr) => {
+                  // arr contains selected aluno ids (strings)
+                  // We need to store matricula_alunos as CSV of student matricula numbers
+                  const matriculas = arr.map(id => {
+                    const found = alunos.find(a => String(a.id) === String(id));
+                    // prefer explicit matricula field, fallback to id
+                    return found ? String(found.matricula_aluno || found.matricula || found.id) : String(id);
+                  });
+                  const names = arr.map(id => {
+                    const found = alunos.find(a => String(a.id) === String(id));
+                    return found ? (found.nome_aluno || found.nome || `Aluno ${id}`) : `Aluno ${id}`;
+                  });
+                  setFormData(prev => ({ ...prev, matricula_alunos: matriculas.join(','), nome_autores: names.join(', ') }));
+                }}
+              />
+
+              <label className="block text-sm font-medium text-gray-700 mb-1 mt-3">Nomes dos Autores (alunos) — editável</label>
               <textarea
-                name="matricula_alunos"
-                value={formData.matricula_alunos}
+                name="nome_autores"
+                value={formData.nome_autores}
                 onChange={handleChange}
-                placeholder="Ex: 2023001,2023002,2023003 (separadas por vírgula)"
+                placeholder="Ex: João Silva, Maria Souza, Pedro Lima (separados por vírgula)"
                 rows="3"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Projeto *</label>
+              <select
+                name="tipo_projeto"
+                value={formData.tipo_projeto}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {TIPOS_PROJETO.map(tipo => (
+                  <option key={tipo} value={tipo}>{tipo}</option>
+                ))}
+              </select>
             </div>
 
             <div className="flex items-center gap-3">

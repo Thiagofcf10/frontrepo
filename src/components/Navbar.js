@@ -2,13 +2,17 @@
 
 import { useAuth } from '@/context/AuthProvider';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Hide title and user/logout controls on specific pages per request
+  const hideHeaderControls = pathname === '/home' || (pathname && pathname.startsWith('/professor')) || (pathname && pathname.startsWith('/aluno')) || (pathname && pathname.startsWith('/alunos')) || (pathname && pathname.startsWith('/arquivos'));
 
   const handleLogout = () => {
     logout();
@@ -26,33 +30,37 @@ export default function Navbar() {
           >
             ☰
           </button>
-          <h1 className="text-xl font-bold">IFPA Projetos</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          {user ? (
-            <>
-              <span className="text-sm">👤 {user.nome_usuario}</span>
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm"
-              >
-                Sair
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium">Entrar</Link>
-              <Link href="/register" className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium">Registrar</Link>
-            </>
+          {!hideHeaderControls && (
+            <h1 className="text-xl font-bold">IFPA Projetos</h1>
           )}
         </div>
+        {!hideHeaderControls && (
+          <div className="flex items-center gap-4">
+            {user ? (
+              <>
+                <span className="text-sm">👤 {user.nome_usuario}</span>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm"
+                >
+                  Sair
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium">Entrar</Link>
+                <Link href="/register" className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium">Registrar</Link>
+              </>
+            )}
+          </div>
+        )}
       </nav>
 
       {/* Sidebar Menu */}
       <div
         className={`fixed left-0 top-16 h-[calc(100vh-64px)] bg-gray-800 text-white w-64 transform transition-transform ${
           menuOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 md:static md:h-auto md:w-64 md:flex md:flex-col md:gap-2 p-4 md:shadow-lg z-50`}
+        } md:translate-x-0 md:static md:h-auto md:w-69 md:flex md:flex-col md:gap-2 p-4 md:shadow-lg z-50`}
       >
         <div className="flex flex-col gap-2">
           {/* Menu comum para todos */}
@@ -82,6 +90,9 @@ export default function Navbar() {
               </div>
                   <Link href="/professor/gerenciar-projetos" className="hover:bg-gray-700 p-2 rounded text-sm">
                     🗂️ Gerenciar Projetos
+                  </Link>
+                  <Link href="/professor/gerenciar-destaques" className="hover:bg-gray-700 p-2 rounded text-sm">
+                    ⭐ Gerenciar Destaques
                   </Link>
               {/* Admin link visible only to professors (opens backend admin UI) */}
               <Link href="/admin" className="hover:bg-gray-700 p-2 rounded text-sm">

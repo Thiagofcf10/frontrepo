@@ -5,14 +5,17 @@ import { useAuth } from '@/context/AuthProvider';
 import { useRouter } from 'next/navigation';
 import api, { fetchWithApiKey, fetchWithAuth } from '@/lib/api';
 import Navbar from '@/components/Navbar';
+import AlunoMultiSelect from '@/components/AlunoMultiSelect';
+import { TIPOS_PROJETO } from '@/lib/constants';
 
 export default function GerenciarProjetosPage() {
   const { user, token } = useAuth();
   const router = useRouter();
   const [projetos, setProjetos] = useState([]);
+  const [alunos, setAlunos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({ nome_projeto: '', orientador: '', coorientador: '', matricula_alunos: '', published: false, published_at: null });
+  const [form, setForm] = useState({ nome_projeto: '', orientador: '', coorientador: '', nome_autores: '', tipo_projeto: 'Integrador', published: false, published_at: null });
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -32,7 +35,28 @@ export default function GerenciarProjetosPage() {
     setLoading(true);
     try {
       const res = await fetchWithApiKey(`${api.getApiUrl()}/selectprojetos`);
-      setProjetos(res.data || []);
+      const projetosData = res.data || [];
+
+      // fetch professors to map orientador id -> nome
+      let profMap = {};
+      try {
+        const presp = await fetchWithApiKey(`${api.getApiUrl()}/selectprofessor`);
+        const profs = presp && presp.data ? presp.data : [];
+        profs.forEach(p => { if (p && p.id) profMap[p.id] = p.nome_professor || p.nome || String(p.id); });
+      } catch (e) {
+        // ignore professor lookup errors; we'll fall back to IDs
+      }
+
+      const mapped = projetosData.map(p => ({ ...p, orientadorNome: profMap[p.orientador] || null }));
+      setProjetos(mapped);
+      // load alunos for selection
+      try {
+        const aresp = await fetchWithApiKey(`${api.getApiUrl()}/selectaluno`);
+        const alunosData = aresp && aresp.data ? aresp.data : [];
+        setAlunos(alunosData);
+      } catch (ae) {
+        setAlunos([]);
+      }
     } catch (err) {
       console.error('Erro ao carregar projetos', err);
       setToast({ type: 'error', message: 'Erro ao carregar projetos' });
@@ -43,11 +67,15 @@ export default function GerenciarProjetosPage() {
 
   const startEdit = (p) => {
     setEditingId(p.id);
+    // split matricula_alunos into array-like CSV string stored in form
+    const matriculaCsv = p.matricula_alunos || '';
     setForm({
       nome_projeto: p.nome_projeto || '',
       orientador: p.orientador || '',
       coorientador: p.coorientador || '',
-      matricula_alunos: p.matricula_alunos || '',
+      nome_autores: p.nome_autores || '',
+      matricula_alunos: matriculaCsv,
+      tipo_projeto: p.tipo_projeto || 'Integrador',
       published: !!p.published,
       published_at: p.published_at || null
     });
@@ -55,15 +83,25 @@ export default function GerenciarProjetosPage() {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setForm({ nome_projeto: '', orientador: '', coorientador: '', matricula_alunos: '' });
+    setForm({ nome_projeto: '', orientador: '', coorientador: '', nome_autores: '' });
   };
 
   const handleChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
+  const handleAlunoSelect = (e) => {
+    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+    const matriculaCsv = selected.join(',');
+    const names = selected.map(id => {
+      const found = alunos.find(a => String(a.id) === String(id));
+      return found ? (found.nome_aluno || found.nome || `Aluno ${id}`) : `Aluno ${id}`;
+    });
+    setForm(prev => ({ ...prev, matricula_alunos: matriculaCsv, nome_autores: names.join(', ') }));
+  };
+
   const saveProjeto = async (id) => {
     setBusy(true);
     try {
-      const payload = { nome_projeto: form.nome_projeto, orientador: form.orientador, coorientador: form.coorientador, matricula_alunos: form.matricula_alunos, published: !!form.published, published_at: form.published ? (form.published_at || new Date().toISOString().slice(0,19).replace('T',' ')) : null };
+      const payload = { nome_projeto: form.nome_projeto, orientador: form.orientador, coorientador: form.coorientador, matricula_alunos: form.matricula_alunos || '', nome_autores: form.nome_autores, tipo_projeto: form.tipo_projeto, published: !!form.published, published_at: form.published ? (form.published_at || new Date().toISOString().slice(0,19).replace('T',' ')) : null };
       await fetchWithAuth(`${api.getApiUrl()}/atualizarprojeto/${id}`, {
         method: 'PUT',
         body: JSON.stringify(payload)
@@ -128,9 +166,35 @@ export default function GerenciarProjetosPage() {
                             <input name="coorientador" value={form.coorientador} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2" />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium">Matrícula alunos</label>
-                            <input name="matricula_alunos" value={form.matricula_alunos} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2" />
+                            <label className="block text-sm font-medium">Selecionar Alunos (matrículas)</label>
+                            <AlunoMultiSelect
+                              alunos={alunos}
+                              value={(form.matricula_alunos || '').split(',').filter(Boolean)}
+                              onChange={(arr) => {
+                                  // Convert selected aluno ids -> student matricula numbers
+                                  const matriculas = arr.map(id => {
+                                    const found = alunos.find(a => String(a.id) === String(id));
+                                    return found ? String(found.matricula_aluno || found.matricula || found.id) : String(id);
+                                  });
+                                  const names = arr.map(id => {
+                                    const found = alunos.find(a => String(a.id) === String(id));
+                                    return found ? (found.nome_aluno || found.nome || `Aluno ${id}`) : `Aluno ${id}`;
+                                  });
+                                  setForm(prev => ({ ...prev, matricula_alunos: matriculas.join(','), nome_autores: names.join(', ') }));
+                              }}
+                            />
+                            <label className="block text-sm font-medium mt-2">Nomes dos autores (separados por vírgula)</label>
+                            <input name="nome_autores" value={form.nome_autores} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2" />
                           </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium mt-2">Tipo de projeto</label>
+                          <select name="tipo_projeto" value={form.tipo_projeto} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2">
+                            {TIPOS_PROJETO.map(tipo => (
+                              <option key={tipo} value={tipo}>{tipo}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="flex items-center gap-3 mt-2">
                           <input id={`edit-published-${p.id}`} type="checkbox" name="published" checked={form.published} onChange={(e) => setForm(prev => ({ ...prev, published: e.target.checked }))} />
@@ -141,8 +205,9 @@ export default function GerenciarProjetosPage() {
                       <>
                         <h3 className="text-lg font-semibold">{p.nome_projeto}</h3>
                         <p className="text-sm text-gray-600">Coorientador: {p.coorientador || '—'}</p>
-                        <p className="text-sm text-gray-600">Matrícula alunos: {p.matricula_alunos || '—'}</p>
-                        <p className="text-xs text-gray-500 mt-1">Orientador ID: {p.orientador}</p>
+                        <p className="text-sm text-gray-600">Alunos: {p.nome_autores || p.matricula_alunos || '—'}</p>
+                        <p className="text-sm text-gray-600">Tipo: {p.tipo_projeto || 'Integrador'}</p>
+                        <p className="text-xs text-gray-500 mt-1">Orientador: {p.orientadorNome || p.orientador}</p>
                         <p className="text-xs text-gray-500 mt-1">Status: {p.published ? 'Publicado' : 'Rascunho'} {p.published_at ? `— ${new Date(p.published_at).toLocaleString()}` : ''}</p>
                       </>
                     )}

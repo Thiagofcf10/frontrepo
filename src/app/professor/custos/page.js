@@ -12,6 +12,7 @@ export default function CustosPage() {
   const { user, token } = useAuth();
   const router = useRouter();
   const [projetos, setProjetos] = useState([]);
+  const [projectSearch, setProjectSearch] = useState('');
   const [custos, setCustos] = useState([]);
   const [selectedProjetoId, setSelectedProjetoId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -135,8 +136,11 @@ export default function CustosPage() {
             {/* Seletor de Projeto */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold mb-3">Selecione um Projeto</h2>
+              <div className="mb-3">
+                <input value={projectSearch} onChange={(e) => setProjectSearch(e.target.value)} placeholder="Pesquisar projeto por nome..." className="w-full px-3 py-2 border border-gray-300 rounded" />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {projetos.map(projeto => (
+                {projetos.filter(p => !projectSearch || String(p.nome_projeto || '').toLowerCase().includes(projectSearch.toLowerCase())).map(projeto => (
                   <button
                     key={projeto.id}
                     onClick={() => handleSelectProjeto(projeto.id)}
@@ -156,12 +160,15 @@ export default function CustosPage() {
             {selectedProjetoId && (
               <>
                 {/* Botão de adicionar */}
-                <button
-                  onClick={() => setModalOpen(true)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold"
-                >
-                  ➕ Adicionar Custo
-                </button>
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setModalOpen(true)}
+                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold shadow"
+                  >
+                    ➕ Adicionar Custo
+                  </button>
+                  <div className="text-sm text-gray-600">Selecione um projeto à esquerda para ver/gerenciar custos</div>
+                </div>
 
                 {/* Lista de Custos */}
                 <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -172,25 +179,21 @@ export default function CustosPage() {
                     ) : (
                       <div className="space-y-3">
                         {custos.map(custo => (
-                          <div key={custo.id} className="border border-gray-200 rounded p-4 flex justify-between items-start">
-                            <div>
-                              <h3 className="font-semibold">{custo.equipamento}</h3>
-                              <p className="text-sm text-gray-600">Equipamento: R$ {parseFloat(custo.custos_equipamento).toFixed(2)}</p>
-                              {custo.insumos && (
-                                <>
-                                  <p className="text-sm text-gray-600">Insumos: {custo.insumos}</p>
-                                  <p className="text-sm text-gray-600">Custo: R$ {parseFloat(custo.custos_insumos).toFixed(2)}</p>
-                                </>
-                              )}
-                            </div>
-                            <button
-                              onClick={() => handleDeleteCusto(custo.id)}
-                              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
-                            >
-                              🗑️ Deletar
-                            </button>
-                          </div>
-                        ))}
+                              <div key={custo.id} className="border border-gray-100 rounded p-4 flex flex-col md:flex-row md:justify-between gap-3 md:items-center">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-800">{custo.equipamento || '—'}</h3>
+                                  <div className="mt-1 text-sm text-gray-600">Equipamento: R$ {parseFloat(custo.custos_equipamento || 0).toFixed(2)}</div>
+                                  {custo.insumos && (
+                                    <div className="mt-1 text-sm text-gray-600">Insumos: {custo.insumos} — R$ {parseFloat(custo.custos_insumos || 0).toFixed(2)}</div>
+                                  )}
+                                  {custo.created_at && <div className="mt-1 text-xs text-gray-400">Adicionado em: {new Date(custo.created_at).toLocaleString('pt-BR')}</div>}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <div className="text-lg font-semibold">R$ {(Number(custo.custos_equipamento || 0) + Number(custo.custos_insumos || 0)).toFixed(2)}</div>
+                                  <button onClick={() => handleDeleteCusto(custo.id)} className="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded">🗑️ Deletar</button>
+                                </div>
+                              </div>
+                            ))}
                       </div>
                     )}
                   </div>

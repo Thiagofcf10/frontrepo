@@ -6,11 +6,13 @@ import api, { fetchWithApiKey } from '@/lib/api';
 
 // Simple in-memory cache to avoid repeated network calls for the same professor
 const professorNameCache = {};
+const alunoNamesCache = {};
 
 export default function ProjetoCard({ projeto, onEdit, onDelete, showActions = false }) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [orientadorNome, setOrientadorNome] = useState(null);
+  const [alunoNomes, setAlunoNomes] = useState([]);
   const [arquivoResumo, setArquivoResumo] = useState(null);
 
   const goToDetail = () => {
@@ -61,6 +63,77 @@ export default function ProjetoCard({ projeto, onEdit, onDelete, showActions = f
     return () => { mounted = false; };
   }, [projeto]);
 
+  // Fetch aluno names or use provided nome_autores
+  useEffect(() => {
+    let mounted = true;
+
+    // If projeto already contains nome_autores (comma-separated names), use them directly
+    if (projeto && projeto.nome_autores && typeof projeto.nome_autores === 'string' && projeto.nome_autores.trim() !== '') {
+      const nomes = projeto.nome_autores.split(',').map(s => s.trim()).filter(s => s);
+      setAlunoNomes(nomes);
+      return () => { mounted = false; };
+    }
+
+    const matriculaString = projeto && projeto.matricula_alunos;
+
+    if (!matriculaString || typeof matriculaString !== 'string') {
+      setAlunoNomes([]);
+      return () => { mounted = false; };
+    }
+
+    // Parse comma-separated tokens (could be aluno IDs or matricula numbers)
+    const tokens = matriculaString.split(',').map(t => t.trim()).filter(Boolean);
+
+    if (tokens.length === 0) {
+      setAlunoNomes([]);
+      return () => { mounted = false; };
+    }
+
+    // Fetch aluno data and try to resolve tokens by id or by matricula number
+    (async () => {
+      try {
+        const resp = await fetchWithApiKey(`/selectaluno`);
+        const alunos = resp && resp.data ? resp.data : [];
+
+        // build lookup maps
+        const byId = {};
+        const byMat = {};
+        alunos.forEach(a => {
+          if (a && a.id != null) byId[String(a.id)] = a;
+          if (a && (a.matricula_aluno != null || a.matricula != null)) byMat[String(a.matricula_aluno || a.matricula)] = a;
+        });
+
+        const nomes = tokens.map(tok => {
+          // prefer id match
+          const byIdFound = byId[String(tok)];
+          if (byIdFound) {
+            const nome = byIdFound.nome_aluno || byIdFound.nome;
+            alunoNamesCache[String(tok)] = nome || `Aluno ${tok}`;
+            return nome || `Aluno ${tok}`;
+          }
+          // try matricula match
+          const byMatFound = byMat[String(tok)];
+          if (byMatFound) {
+            const nome = byMatFound.nome_aluno || byMatFound.nome;
+            alunoNamesCache[String(tok)] = nome || `Aluno ${tok}`;
+            return nome || `Aluno ${tok}`;
+          }
+
+          // cached by token?
+          if (alunoNamesCache[String(tok)]) return alunoNamesCache[String(tok)];
+          return `Aluno ${tok}`;
+        });
+
+        if (mounted) setAlunoNomes(nomes);
+      } catch (err) {
+        console.error('Erro ao carregar nomes de alunos:', err);
+        if (mounted) setAlunoNomes(tokens.map(t => `Aluno ${t}`));
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, [projeto]);
+
   // load arquivo resumo (first arquivo) for this project
   useEffect(() => {
     let mounted = true;
@@ -97,7 +170,8 @@ export default function ProjetoCard({ projeto, onEdit, onDelete, showActions = f
         <div className="mt-3 text-sm text-gray-600 space-y-1">
           <p><strong>Orientador:</strong> {orientadorNome ?? projeto.orientador}</p>
           <p><strong>Coorientador:</strong> {projeto.coorientador || 'N/A'}</p>
-          <p><strong>Alunos:</strong> {projeto.matricula_alunos || 'N/A'}</p>
+          <p><strong>Alunos:</strong> {alunoNomes.length > 0 ? alunoNomes.join(', ') : 'N/A'}</p>
+          <p><strong>Tipo:</strong> {projeto.tipo_projeto || 'Integrador'}</p>
           {projeto.created_at && (
             <p><strong>Criado:</strong> {new Date(projeto.created_at).toLocaleDateString('pt-BR')}</p>
           )}
@@ -144,12 +218,16 @@ export default function ProjetoCard({ projeto, onEdit, onDelete, showActions = f
             <div className="text-sm text-gray-600 space-y-1 mb-4">
               <p><strong>Orientador:</strong> {orientadorNome ?? projeto.orientador}</p>
               <p><strong>Coorientador:</strong> {projeto.coorientador || 'N/A'}</p>
-              <p><strong>Alunos:</strong> {projeto.matricula_alunos || 'N/A'}</p>
+              <p><strong>Alunos:</strong> {alunoNomes.length > 0 ? alunoNomes.join(', ') : 'N/A'}</p>
+              <p><strong>Tipo:</strong> {projeto.tipo_projeto || 'Integrador'}</p>
             </div>
 
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded bg-gray-200">Fechar</button>
-              <button onClick={goToDetail} className="px-4 py-2 rounded bg-sky-700 text-white">Ver detalhes</button>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 border border-gray-200">Fechar</button>
+              <button onClick={goToDetail} className="px-4 py-2 rounded bg-sky-600 hover:bg-sky-700 text-white font-semibold shadow">🔎 Ver detalhes</button>
+              {arquivoResumo && (
+                <a href={`${api.getApiUrl()}/downloadarquivo/${encodeURIComponent((projeto.arquivos && projeto.arquivos[0] && projeto.arquivos[0].caminho_arquivo) ? projeto.arquivos[0].caminho_arquivo.split('/').pop() : '')}`} target="_blank" rel="noreferrer" className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold shadow">⤓ Baixar resumo</a>
+              )}
             </div>
           </div>
         </div>
