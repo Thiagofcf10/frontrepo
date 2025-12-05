@@ -219,9 +219,9 @@ export default function ArquivosPage() {
           <div className="space-y-6">
             {/* Seletor de Projeto */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold mb-3">Selecione um Projeto</h2>
+              <h2 className="text-lg text-black  font-semibold mb-3">Selecione um Projeto</h2>
               <div className="mb-3">
-                <input value={projectSearch} onChange={(e) => setProjectSearch(e.target.value)} placeholder="Pesquisar projeto por nome..." className="w-full px-3 py-2 border border-gray-300 rounded" />
+                <input value={projectSearch} onChange={(e) => setProjectSearch(e.target.value)} placeholder="Pesquisar projeto por nome..." className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {projetos.filter(p => !projectSearch || String(p.nome_projeto || '').toLowerCase().includes(projectSearch.toLowerCase())).map(projeto => (
@@ -234,7 +234,9 @@ export default function ArquivosPage() {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className="font-semibold">{projeto.nome_projeto}</div>
+                    <div className="font-semibold text-black">{projeto.nome_projeto}</div>
+                    <div className="text-xs text-gray-600">Autores: {projeto.nome_autores}</div>
+                    <div className="text-xs text-gray-600">Tipo do projeto: {projeto.tipo_projeto}</div>
                   </button>
                 ))}
               </div>
@@ -244,88 +246,88 @@ export default function ArquivosPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Formulário de Upload */}
                 <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="text-lg font-semibold mb-4">Enviar Arquivo</h2>
+                  <h2 className="text-lg text-black font-semibold mb-4">Enviar Arquivo</h2>
                   <form onSubmit={handleSubmit} className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Arquivo *</label>
+                      <label className="block text-sm text-black font-medium mb-1">Arquivo *</label>
                       <input
                         type="file"
                         onChange={handleFileChange}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                        className="w-full text-gray-500 px-3 py-2 border border-gray-300 rounded"
                       />
-                      {file && <p className="text-sm text-gray-600 mt-1">📄 {file.name}</p>}
+                      {file && <p className="text-sm text-gray-700 mt-1">📄 {file.name}</p>}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">Resumo</label>
+                      <label className="block text-sm text-black font-medium mb-1">Resumo</label>
                       <textarea
                         name="resumo"
                         value={formData.resumo}
                         onChange={handleInputChange}
                         placeholder="Resumo do projeto"
                         rows="2"
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                        className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">Objetivo</label>
+                      <label className="block text-sm text-black font-medium mb-1">Objetivo</label>
                       <textarea
                         name="objetivo"
                         value={formData.objetivo}
                         onChange={handleInputChange}
                         placeholder="Objetivo do projeto"
                         rows="2"
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                        className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">Justificativa</label>
+                      <label className="block text-sm text-black font-medium mb-1">Justificativa</label>
                       <textarea
                         name="justificativa"
                         value={formData.justificativa}
                         onChange={handleInputChange}
                         placeholder="Justificativa"
                         rows="2"
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                        className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">Sumário</label>
+                      <label className="block text-sm text-black font-medium mb-1">Sumário</label>
                       <textarea
                         name="sumario"
                         value={formData.sumario}
                         onChange={handleInputChange}
                         placeholder="Sumário do arquivo"
                         rows="2"
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                        className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">Introdução</label>
+                      <label className="block text-sm text-black font-medium mb-1">Introdução</label>
                       <textarea
                         name="introducao"
                         value={formData.introducao}
                         onChange={handleInputChange}
                         placeholder="Introdução"
                         rows="2"
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                        className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">Bibliografia</label>
+                      <label className="block text-sm text-black font-medium mb-1">Bibliografia</label>
                       <textarea
                         name="bibliografia"
                         value={formData.bibliografia}
                         onChange={handleInputChange}
                         placeholder="Referências bibliográficas"
                         rows="2"
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
+                        className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded"
                       />
                     </div>
 
@@ -366,7 +368,7 @@ export default function ArquivosPage() {
 
                 {/* Lista de Arquivos */}
                 <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="text-lg font-semibold mb-4">Arquivos do Projeto</h2>
+                  <h2 className="text-lg text-black font-semibold mb-4">Arquivos do Projeto</h2>
                   {arquivos.length === 0 ? (
                     <p className="text-gray-500">Nenhum arquivo adicionado ainda.</p>
                   ) : (
@@ -374,7 +376,7 @@ export default function ArquivosPage() {
                       {arquivos.map(arquivo => (
                         <div key={arquivo.id} className="border border-gray-200 rounded p-3 flex justify-between items-start">
                           <div className="flex-1">
-                            <p className="font-semibold text-sm">📄 {arquivo.nome_arquivo}</p>
+                            <p className="font-semibold text-sm text-black">📄 {arquivo.nome_arquivo}</p>
                             <p className="text-xs text-gray-600 mt-1">{arquivo.resumo}</p>
                           </div>
                           <div className="flex flex-col gap-2">

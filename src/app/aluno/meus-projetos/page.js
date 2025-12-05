@@ -99,7 +99,7 @@ export default function MeusProjetosAlunoPage() {
                       } catch (err) {
                         console.error('Erro ao carregar registros:', err);
                       }
-                    }} className="mt-2 bg-sky-600 text-white px-3 py-1 rounded text-sm">✏️ Editar Relatórios</button>
+                    }} className="mt-2 bg-sky-600 text-white px-3 py-2 rounded text-sm">✏️ Editar Relatórios</button>
                   </div>
                 </div>
             ))}
@@ -195,11 +195,11 @@ export function RegistroModal({ isOpen, onClose, projectName, registros, current
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black opacity-40" onClick={onClose} />
-      <div className="relative z-10 max-w-3xl w-full mx-4 bg-white rounded shadow-lg p-6">
-        <h3 className="text-xl font-bold mb-2">Registros — {projectName}</h3>
-        <div className="space-y-3 max-h-80 overflow-y-auto">
-          {registros.length === 0 && <p className="text-sm text-gray-500">Nenhum registro.</p>}
+      <div className="absolute inset-0 bg-black opacity-70" onClick={onClose} />
+      <div className="relative z-10 max-w-3xl w-full mx-4 bg-white rounded shadow-lg p-6 h-5/6 overflow-y-auto">
+        <h3 className="text-xl text-black font-bold mb-2">Registros — {projectName}</h3>
+        <div className="space-y-3 max-h-full overflow-y-auto">
+          {registros.length === 0 && <p className="text-sm text-black text-gray-500">Nenhum registro.</p>}
           {registros.map(r => {
             const deadline = r.relatorio_edit_deadline ? new Date(r.relatorio_edit_deadline) : null;
             const remaining = formatRemaining(deadline);
@@ -213,7 +213,7 @@ export function RegistroModal({ isOpen, onClose, projectName, registros, current
               <div key={r.id} className="border p-3 rounded">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <div className="font-semibold">{r.titulo_reuniao}</div>
+                    <div className="font-semibold text-black">{r.titulo_reuniao}</div>
                     <div className="text-sm text-gray-600">{r.data_reuniao ? new Date(r.data_reuniao).toLocaleDateString('pt-BR') : ''}</div>
                     <div className="mt-2 text-sm text-gray-700 whitespace-pre-line">{r.relatorio || '—'}</div>
                     <div className="mt-2 flex items-center gap-2">
@@ -226,7 +226,7 @@ export function RegistroModal({ isOpen, onClose, projectName, registros, current
                       )}
                     </div>
                   </div>
-                  <div className="ml-4 flex flex-col gap-2">
+                  <div className="ml-4 flex flex-col gap-2 ">
                     <button onClick={() => {
                       if (!canEdit) return alert('Você não tem permissão para editar este relatório ou o prazo expirou.');
                       setEditing(r.id);
@@ -238,14 +238,14 @@ export function RegistroModal({ isOpen, onClose, projectName, registros, current
                   </div>
                 </div>
                 {editing === r.id && (
-                  <div className="mt-2">
+                  <div className="mt-2 text-gray-700 text-sm">
                     <textarea value={editText} onChange={(e) => setEditText(e.target.value)} className="w-full border rounded p-2" rows={4} />
                     <div className="mt-2 flex gap-2">
                       <button onClick={async () => {
                         await onEditSubmit(r.id, editText);
                         setEditing(null);
                       }} className="flex items-center gap-2 bg-green-600 text-white px-3 py-1 rounded"><span>💾</span><span>Salvar</span></button>
-                      <button onClick={() => setEditing(null)} className="flex items-center gap-2 bg-gray-200 px-3 py-1 rounded"><span>✖️</span><span>Cancelar</span></button>
+                      <button onClick={() => setEditing(null)} className="flex items-center gap-2 bg-gray-600 px-3 py-1 rounded"><span>✖️</span><span>Cancelar</span></button>
                     </div>
                   </div>
                 )}
@@ -254,7 +254,7 @@ export function RegistroModal({ isOpen, onClose, projectName, registros, current
           })}
         </div>
         <div className="mt-4 text-right">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Fechar</button>
+          <button onClick={onClose} className="px-4 py-2 bg-gray-500 rounded">Fechar</button>
         </div>
       </div>
     </div>

@@ -100,7 +100,7 @@ export default function PerfilPage() {
       <main className="flex-1 p-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="col-span-1">
-            <h1 className="text-2xl font-bold mb-4">Meu Perfil</h1>
+            <h1 className="text-2xl text-black font-bold mb-4">Meu Perfil</h1>
 
             <div className="bg-white rounded shadow p-6">
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -158,8 +158,8 @@ export default function PerfilPage() {
           </div>
 
           <div className="col-span-2">
-            <h2 className="text-xl font-semibold mb-3">Informações</h2>
-            <div className="bg-white rounded shadow p-6 mb-6">
+            <h2 className="text-xl text-black font-semibold mb-3">Informações</h2>
+            <div className="bg-white text-black rounded shadow p-6 mb-6">
               <p><strong>Nome:</strong> {user?.nome_usuario}</p>
               <p><strong>Email:</strong> {user?.email}</p>
               <p><strong>Tipo:</strong> {roleInfo?.tipo || '—'}</p>
@@ -205,7 +205,7 @@ export default function PerfilPage() {
               )}
             </div>
 
-            <h2 className="text-xl font-semibold mb-3">Meus Projetos</h2>
+            <h2 className="text-xl text-black font-semibold mb-3">Meus Projetos</h2>
             <div className="bg-white rounded shadow p-6">
               {userProjects.length === 0 ? (
                 <p className="text-gray-500">Nenhum projeto encontrado.</p>

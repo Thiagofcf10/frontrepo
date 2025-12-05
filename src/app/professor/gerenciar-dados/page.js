@@ -89,11 +89,11 @@ export default function GerenciarDados() {
     <div className="min-h-screen bg-gray-50 flex">
       <Navbar />
       <main className="flex-1 p-6 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Gerenciar Dados Acadêmicos</h1>
-        <p className="text-sm text-gray-600 mb-6">Adicione áreas, turmas e cursos (apenas professores).</p>
+        <h1 className="text-2xl text-black  font-bold mb-4">Gerenciar Dados Acadêmicos</h1>
+        <p className="text-sm text-gray-600 mb-6">Adicione áreas, turmas e cursos (caso ainda não exista no sistema).</p>
 
         <section className="bg-white rounded shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-3">Nova Área Acadêmica</h2>
+          <h2 className="text-black font-semibold mb-3">Nova Área Acadêmica</h2>
           <form onSubmit={submitArea} className="space-y-3">
             <div>
               <label className="block text-sm text-gray-700">Nome da Área *</label>
@@ -110,7 +110,7 @@ export default function GerenciarDados() {
         </section>
 
         <section className="bg-white rounded shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-3">Nova Turma</h2>
+          <h2 className="text-black font-semibold mb-3">Nova Turma</h2>
           <form onSubmit={submitTurma} className="space-y-3">
             <div>
               <label className="block text-sm text-gray-700">Código da Turma *</label>
@@ -131,7 +131,7 @@ export default function GerenciarDados() {
         </section>
 
         <section className="bg-white rounded shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-3">Novo Curso</h2>
+          <h2 className="text-black font-semibold mb-3">Novo Curso</h2>
           <form onSubmit={submitCurso} className="space-y-3">
             <div>
               <label className="block text-sm text-gray-700">Nome do Curso *</label>

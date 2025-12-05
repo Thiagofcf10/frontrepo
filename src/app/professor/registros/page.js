@@ -189,9 +189,9 @@ export default function RegistrosPage() {
           <div className="space-y-6">
             {/* Seletor de Projeto */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold mb-3">Selecione um Projeto</h2>
+              <h2 className="text-lg text-black font-semibold mb-3">Selecione um Projeto</h2>
               <div className="mb-3">
-                <input value={projectSearch} onChange={(e) => setProjectSearch(e.target.value)} placeholder="Pesquisar projeto por nome..." className="w-full px-3 py-2 border border-gray-300 rounded" />
+                <input value={projectSearch} onChange={(e) => setProjectSearch(e.target.value)} placeholder="Pesquisar projeto por nome..." className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {projetos.filter(p => !projectSearch || String(p.nome_projeto || '').toLowerCase().includes(projectSearch.toLowerCase())).map(projeto => (
@@ -204,7 +204,9 @@ export default function RegistrosPage() {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className="font-semibold">{projeto.nome_projeto}</div>
+                   <div className="font-semibold text-black">{projeto.nome_projeto}</div>
+                    <div className="text-xs text-gray-600">Autores: {projeto.nome_autores}</div>
+                    <div className="text-xs text-gray-600">Tipo do projeto: {projeto.tipo_projeto}</div>
                   </button>
                 ))}
               </div>
@@ -230,7 +232,7 @@ export default function RegistrosPage() {
 
                 {/* Lista de Registros */}
                 <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="text-lg font-semibold mb-4">Reuniões Registradas</h2>
+                  <h2 className="text-lg text-black font-semibold mb-4">Reuniões Registradas</h2>
                   {registros.length === 0 ? (
                     <p className="text-gray-500">Nenhuma reunião registrada ainda.</p>
                   ) : (
@@ -241,7 +243,7 @@ export default function RegistrosPage() {
                         return (
                           <div key={registro.id} className="border border-gray-200 rounded p-4 flex justify-between items-start">
                             <div className="flex-1">
-                              <h3 className="font-semibold">{registro.titulo_reuniao}</h3>
+                              <h3 className="font-semibold text-black">{registro.titulo_reuniao}</h3>
                               <p className="text-sm text-gray-600">📅 {new Date(registro.data_reuniao).toLocaleDateString('pt-BR')}</p>
                               <p className="text-sm text-gray-600">⏱️ Duração: {registro.duracao_reuniao}</p>
                               {registro.lista_participantes && (
@@ -288,35 +290,36 @@ export default function RegistrosPage() {
         {/* Modal de Adicionar Registro */}
         <Modal
           isOpen={modalOpen}
-          title="Registrar Nova Reunião"
+          title={<span className="text-black">Registrar Nova Reunião</span>}
           onClose={() => setModalOpen(false)}
           confirmText="Registrar"
           onConfirm={handleAddRegistro}
+          className="opa"
         >
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Título da Reunião *</label>
+              <label className="block text-sm text-black font-medium mb-1">Título da Reunião *</label>
               <input
                 type="text"
                 name="titulo_reuniao"
                 value={formData.titulo_reuniao}
                 onChange={handleChange}
                 placeholder="Ex: Discussão de Requisitos"
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Data da Reunião *</label>
+              <label className="block text-sm text-black font-medium mb-1">Data da Reunião *</label>
               <input
                 type="date"
                 name="data_reuniao"
                 value={formData.data_reuniao}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full text-gray-400 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Duração (HH:MM:SS)</label>
+              <label className="block text-sm text-black font-medium mb-1">Duração (HH:MM:SS)</label>
               <input
                 type="time"
                 name="duracao_reuniao"
@@ -325,51 +328,51 @@ export default function RegistrosPage() {
                   ...prev,
                   duracao_reuniao: e.target.value + ':00'
                 }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full text-gray-400 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Participantes</label>
+              <label className="block text-sm text-black font-medium mb-1">Participantes</label>
               <textarea
                 name="lista_participantes"
                 value={formData.lista_participantes}
                 onChange={handleChange}
                 placeholder="Nomes dos participantes (separados por vírgula)"
                 rows="2"
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Relatório</label>
+              <label className="block text-sm text-black font-medium mb-1">Relatório</label>
               <textarea
                 name="relatorio"
                 value={formData.relatorio}
                 onChange={handleChange}
                 placeholder="Escreva o relatório da reunião aqui"
                 rows="4"
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Prazo para edição do relatório (opcional)</label>
+              <label className="block text-sm text-black font-medium mb-1">Prazo para edição do relatório (opcional)</label>
               <input
                 type="datetime-local"
                 name="relatorio_edit_deadline"
                 value={formData.relatorio_edit_deadline || ''}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full text-gray-400 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <p className="text-xs text-gray-500 mt-1">Se definido, apenas alunos listados poderão editar até essa data/hora.</p>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Alunos permitidos (matrículas ou IDs, separados por vírgula)</label>
+              <label className="block text-sm text-black font-medium mb-1">Alunos permitidos (matrículas ou IDs, separados por vírgula)</label>
               <input
                 type="text"
                 name="relatorio_edit_allowed"
                 value={formData.relatorio_edit_allowed || ''}
                 onChange={handleChange}
                 placeholder="ex: 2023001,2023002 ou 12,15"
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>

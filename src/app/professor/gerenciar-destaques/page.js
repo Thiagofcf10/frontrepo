@@ -130,8 +130,8 @@ export default function GerenciarDestaquesPage() {
                 {projetos.map(p => (
                   <label key={p.id} className="flex items-center justify-between p-2 border rounded">
                     <div className="text-sm">
-                      <div className="font-medium">{p.nome_projeto}</div>
-                      <div className="text-xs text-gray-500">ID: {p.id} — Orientador: {p.orientador || p.orientadorNome || '—'}</div>
+                      <div className="font-medium text-black">{p.nome_projeto}</div>
+                      <div className="text-xs text-gray-500">Orientador: {p.orientador || p.orientadorNome || '—'}</div>
                     </div>
                     <div className="flex items-center gap-2">
                       <input type="checkbox" checked={featured.has(String(p.id))} onChange={() => toggleFeatured(p.id)} />

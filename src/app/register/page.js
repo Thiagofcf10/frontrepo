@@ -207,10 +207,10 @@ export default function RegisterPage() {
       }
 
       setMsgType('success');
-      setMsg('Cadastro realizado com sucesso! Você já foi autenticado e será redirecionado...');
+      setMsg('Cadastro realizado com sucesso! Você já foi autenticado e será redirecionado login...');
 
       setTimeout(() => {
-        router.push('/home');
+        router.push('/login');
       }, 1500);
     } catch (err) {
       setMsgType('error');

@@ -135,9 +135,9 @@ export default function CustosPage() {
           <div className="space-y-6">
             {/* Seletor de Projeto */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold mb-3">Selecione um Projeto</h2>
+              <h2 className="text-black text-lg font-semibold mb-3">Selecione um Projeto</h2>
               <div className="mb-3">
-                <input value={projectSearch} onChange={(e) => setProjectSearch(e.target.value)} placeholder="Pesquisar projeto por nome..." className="w-full px-3 py-2 border border-gray-300 rounded" />
+                <input value={projectSearch} onChange={(e) => setProjectSearch(e.target.value)} placeholder="Pesquisar projeto por nome..." className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {projetos.filter(p => !projectSearch || String(p.nome_projeto || '').toLowerCase().includes(projectSearch.toLowerCase())).map(projeto => (
@@ -150,8 +150,9 @@ export default function CustosPage() {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className="font-semibold">{projeto.nome_projeto}</div>
-                    <div className="text-xs text-gray-600">ID: {projeto.id}</div>
+                    <div className="font-semibold text-black">{projeto.nome_projeto}</div>
+                    <div className="text-xs text-gray-600">Autores: {projeto.nome_autores}</div>
+                    <div className="text-xs text-gray-600">Tipo do projeto: {projeto.tipo_projeto}</div>
                   </button>
                 ))}
               </div>
@@ -189,7 +190,7 @@ export default function CustosPage() {
                                   {custo.created_at && <div className="mt-1 text-xs text-gray-400">Adicionado em: {new Date(custo.created_at).toLocaleString('pt-BR')}</div>}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <div className="text-lg font-semibold">R$ {(Number(custo.custos_equipamento || 0) + Number(custo.custos_insumos || 0)).toFixed(2)}</div>
+                                  <div className="text-lg text-black font-semibold">R$ {(Number(custo.custos_equipamento || 0) + Number(custo.custos_insumos || 0)).toFixed(2)}</div>
                                   <button onClick={() => handleDeleteCusto(custo.id)} className="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded">🗑️ Deletar</button>
                                 </div>
                               </div>
@@ -206,25 +207,25 @@ export default function CustosPage() {
         {/* Modal de Adicionar Custo */}
         <Modal
           isOpen={modalOpen}
-          title="Adicionar Custo"
+          title={<span className="text-black">Adicionar Custo</span>}
           onClose={() => setModalOpen(false)}
           confirmText="Adicionar"
           onConfirm={handleAddCusto}
         >
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Equipamento</label>
+              <label className="block text-sm text-black font-medium mb-1">Equipamento</label>
               <input
                 type="text"
                 name="equipamento"
                 value={formData.equipamento}
                 onChange={handleChange}
                 placeholder="Ex: Laptop"
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Custo do Equipamento (R$)</label>
+              <label className="block text-sm text-black font-medium mb-1">Custo do Equipamento (R$)</label>
               <input
                 type="number"
                 step="0.01"
@@ -232,22 +233,22 @@ export default function CustosPage() {
                 value={formData.custos_equipamento}
                 onChange={handleChange}
                 placeholder="0.00"
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Insumos</label>
+              <label className="block text-sm text-black font-medium mb-1">Insumos</label>
               <input
                 type="text"
                 name="insumos"
                 value={formData.insumos}
                 onChange={handleChange}
                 placeholder="Ex: Parafusos, Cabos"
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Custo dos Insumos (R$)</label>
+              <label className="block text-sm text-black font-medium mb-1">Custo dos Insumos (R$)</label>
               <input
                 type="number"
                 step="0.01"
@@ -255,7 +256,7 @@ export default function CustosPage() {
                 value={formData.custos_insumos}
                 onChange={handleChange}
                 placeholder="0.00"
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full placeholder-gray-400 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>

@@ -54,7 +54,7 @@ export default function LandingPage() {
               <div className="text-gray-500 text-center py-8">Nenhum projeto publicado ainda.</div>
             ) : (
               <div className="grid grid-cols-1 gap-3">
-                {projetos.slice(0, 5).map(p => (
+                {projetos.slice(0, 4).map(p => (
                   <ProjetoCard key={p.id} projeto={p} />
                 ))}
               </div>
@@ -79,7 +79,7 @@ export default function LandingPage() {
             <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-purple-500 hover:shadow-lg transition-shadow">
               <div className="text-4xl mb-3">📚</div>
               <h4 className="text-xl font-semibold text-cyan-900 mb-2">Contribuir</h4>
-              <p className="text-gray-600">Professores podem criar, publicar e gerenciar seus projetos.</p>
+              <p className="text-gray-600">Publique seus projetos e não deixa suas ideias morrerem, crie relatórios detalhados sob orientações dos professores e deixa uma ideia legado para você ou novos alunos continuarem desenvolvendo esses projetos.</p>
             </div>
           </div>
         </section>

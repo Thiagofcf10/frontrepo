@@ -137,7 +137,7 @@ export default function CriarProjetoPage() {
                 onChange={handleChange}
                 required
                 placeholder="Ex: Sistema de Gerenciamento de Tarefas"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full placeholder-gray-500 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -149,7 +149,7 @@ export default function CriarProjetoPage() {
                 name="orientador"
                 value={formData.orientador}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full text-gray-500 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">-- Selecionar orientador (opcional) --</option>
                 {professores.map(p => (
@@ -166,7 +166,7 @@ export default function CriarProjetoPage() {
                 value={formData.coorientador}
                 onChange={handleChange}
                 placeholder="Nome do coorientador (opcional)"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full placeholder-gray-500 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -198,7 +198,7 @@ export default function CriarProjetoPage() {
                 onChange={handleChange}
                 placeholder="Ex: João Silva, Maria Souza, Pedro Lima (separados por vírgula)"
                 rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full text-gray-500 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -209,7 +209,7 @@ export default function CriarProjetoPage() {
                 value={formData.tipo_projeto}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full text-gray-500 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {TIPOS_PROJETO.map(tipo => (
                   <option key={tipo} value={tipo}>{tipo}</option>

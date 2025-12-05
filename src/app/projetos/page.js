@@ -151,7 +151,7 @@ export default function ProjetosPage() {
               placeholder="Digite o nome do projeto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full placeholder-gray-400 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>
 
@@ -163,7 +163,7 @@ export default function ProjetosPage() {
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="w-full px-3 py-2 text-gray-500 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="">Todos os tipos</option>
                 {TIPOS_PROJETO.map(tipo => (
@@ -178,7 +178,7 @@ export default function ProjetosPage() {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="w-full text-gray-500 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="">Todos os anos</option>
                 {years.map(year => (
@@ -193,7 +193,7 @@ export default function ProjetosPage() {
               <select
                 value={selectedProfessor}
                 onChange={(e) => setSelectedProfessor(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="w-full text-gray-500 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="">Todos os professores</option>
                 {professors.map(prof => (
@@ -210,7 +210,7 @@ export default function ProjetosPage() {
               <select
                 value={selectedAluno}
                 onChange={(e) => setSelectedAluno(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="w-full text-gray-500 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 <option value="">Todos os alunos</option>
                 {alunos.map(aluno => (

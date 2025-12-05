@@ -96,7 +96,7 @@ export default function ProjetoDetailPage() {
         ) : (
           <div className="space-y-6">
               <div className="bg-white rounded shadow p-6">
-                <h1 className="text-2xl font-bold">{projeto.nome_projeto}</h1>
+                <h1 className="text-2xl text-black font-bold">{projeto.nome_projeto}</h1>
                 <p className="text-sm text-gray-700 mt-2">
                   {arquivos && arquivos.length > 0 && arquivos[0].resumo ? (
                     <span>{arquivos[0].resumo}</span>
@@ -110,7 +110,7 @@ export default function ProjetoDetailPage() {
               </div>
 
             <div className="bg-white rounded shadow p-6">
-              <h2 className="text-lg font-semibold mb-3">Arquivos do projeto</h2>
+              <h2 className="text-lg text-black font-semibold mb-3">Arquivos do projeto</h2>
               {arquivos.length === 0 ? (
                   <p className="text-gray-500">Nenhum arquivo encontrado.</p>
                 ) : (
@@ -133,7 +133,7 @@ export default function ProjetoDetailPage() {
             </div>
 
             <div className="bg-white rounded shadow p-6">
-              <h2 className="text-lg font-semibold mb-3">Custos do projeto</h2>
+              <h2 className="text-lg text-black  font-semibold mb-3">Custos do projeto</h2>
               {custos.length === 0 ? (
                 <p className="text-gray-500">Nenhum custo registrado para este projeto.</p>
               ) : (
@@ -159,12 +159,12 @@ export default function ProjetoDetailPage() {
                           const total = custos_equipamento + custos_insumos;
                           return (
                             <tr key={c.id} className="border-b">
-                              <td className="px-4 py-3 text-sm">{idx + 1}</td>
-                              <td className="px-4 py-3 text-sm">{equipamento || '—'}</td>
-                              <td className="px-4 py-3 text-sm">{insumos || '—'}</td>
-                              <td className="px-4 py-3 text-sm text-right">R$ {custos_equipamento.toFixed(2)}</td>
-                              <td className="px-4 py-3 text-sm text-right">R$ {custos_insumos.toFixed(2)}</td>
-                              <td className="px-4 py-3 text-sm text-right font-semibold">R$ {total.toFixed(2)}</td>
+                              <td className="px-4 py-3 text-sm text-gray-500">{idx + 1}</td>
+                              <td className="px-4 py-3 text-sm text-gray-500" >{equipamento || '—'}</td>
+                              <td className="px-4 py-3 text-sm text-gray-500">{insumos || '—'}</td>
+                              <td className="px-4 py-3 text-sm text-gray-500 text-right">R$ {custos_equipamento.toFixed(2)}</td>
+                              <td className="px-4 py-3 text-sm text-gray-500 text-right">R$ {custos_insumos.toFixed(2)}</td>
+                              <td className="px-4 py-3 text-sm text-gray-500 text-right font-semibold">R$ {total.toFixed(2)}</td>
                             </tr>
                           );
                         })}
@@ -174,7 +174,7 @@ export default function ProjetoDetailPage() {
 
                   <div className="mt-4 flex justify-between items-center">
                     <div className="text-sm text-gray-600">Total de itens: <strong>{custos.length}</strong></div>
-                    <div className="text-right font-semibold">Total do projeto: R$ {custos.reduce((acc, c) => acc + (Number(c.custos_equipamento || 0) + Number(c.custos_insumos || 0)), 0).toFixed(2)}</div>
+                    <div className="text-right text-gray-700 font-semibold">Total do projeto: R$ {custos.reduce((acc, c) => acc + (Number(c.custos_equipamento || 0) + Number(c.custos_insumos || 0)), 0).toFixed(2)}</div>
                   </div>
                 </div>
               )}

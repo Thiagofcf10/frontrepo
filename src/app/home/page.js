@@ -70,7 +70,7 @@ export default function HomePage() {
             {/* Quick admin menu (shows for logged-in professors) */}
             {user && user.tipo === 'professor' && (
               <section className="mt-6 bg-white rounded-lg shadow p-4">
-                <h3 className="text-lg font-semibold mb-2">Painel Rápido</h3>
+                <h3 className="text-lg text-gray-700  font-semibold mb-2">Painel Rápido</h3>
                 <p className="text-sm text-gray-600 mb-4">Acesse rapidamente as páginas de cadastro e gerenciamento de projetos.</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                   <Link href="/professor/criar-projeto" className="px-3 py-2 bg-sky-600 text-white rounded text-sm text-center">➕ Criar Projeto</Link>
@@ -116,7 +116,7 @@ export default function HomePage() {
             </div>
           ) : activeTab === 'todos' ? (
             <section>
-              <h2 className="text-2xl font-bold mb-4">Projetos em Destaque</h2>
+              <h2 className="text-2xl text-gray-700 font-bold mb-4">Projetos em Destaque</h2>
               {projetos.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <p>Nenhum projeto disponível ainda.</p>
@@ -131,7 +131,7 @@ export default function HomePage() {
             </section>
           ) : (
             <section>
-              <h2 className="text-2xl font-bold mb-4">Meus Projetos</h2>
+              <h2 className="text-2xl text-gray-700 font-bold mb-4">Meus Projetos</h2>
               {meusProjetos.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <p>Você não está vinculado a nenhum projeto ainda.</p>

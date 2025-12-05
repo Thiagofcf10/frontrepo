@@ -45,10 +45,10 @@ export default function AlunoMultiSelect({ alunos = [], value = [], onChange }) 
         placeholder="Pesquisar por nome ou matrícula..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full mb-2 px-3 py-2 border border-gray-300 rounded"
+        className="w-full placeholder-gray-500 mb-2 px-2 py-2 border border-gray-300 rounded"
       />
 
-      <div className="max-h-48 overflow-auto border border-gray-200 rounded p-2 bg-white">
+      <div className="max-h-48 text-gray-500 overflow-y-auto border border-gray-200 rounded p-2 bg-white hover:bg-gray-400">
         {filtered.length === 0 ? (
           <div className="text-sm text-gray-500">Nenhum aluno encontrado.</div>
         ) : (

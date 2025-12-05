@@ -138,7 +138,7 @@ export default function GerenciarProjetosPage() {
 
       <main className="flex-1 p-8">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-2xl font-bold mb-4">Gerenciar Projetos</h1>
+          <h1 className="text-2xl text-black font-bold mb-4">Gerenciar Projetos</h1>
 
           <div className="bg-white rounded shadow p-4 mb-6">
             <p className="text-sm text-gray-600">Lista de projetos. Clique em "Editar" para modificar o projeto ou "Deletar" para remover.</p>
@@ -153,25 +153,24 @@ export default function GerenciarProjetosPage() {
                   <div className="flex-1">
                     {editingId === p.id ? (
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium">Nome do projeto</label>
-                        <input name="nome_projeto" value={form.nome_projeto} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2" />
+                        <label className="block text-black font-medium">Nome do projeto</label>
+                        <input name="nome_projeto" value={form.nome_projeto} onChange={handleChange} className="w-full text-gray-500 border border-gray-300 rounded px-3 py-2"/>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                           <div>
-                            <label className="block text-sm font-medium">Orientador (ID)</label>
-                            <input name="orientador" value={form.orientador} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2" />
+                            <label className="block text-black font-medium">Orientador (ID)</label>
+                            <input name="orientador" value={form.orientador} onChange={handleChange} className="w-full text-gray-500 border border-gray-300 rounded px-3 py-2" />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium">Coorientador</label>
-                            <input name="coorientador" value={form.coorientador} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2" />
+                            <label className="block text-black font-medium">Coorientador</label>
+                            <input name="coorientador" value={form.coorientador} onChange={handleChange} className="w-full text-gray-500 border border-gray-300 rounded px-3 py-2" />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium">Selecionar Alunos (matrículas)</label>
+                            <label className="block text-black font-medium">Selecionar Alunos</label>
                             <AlunoMultiSelect
                               alunos={alunos}
                               value={(form.matricula_alunos || '').split(',').filter(Boolean)}
                               onChange={(arr) => {
-                                  // Convert selected aluno ids -> student matricula numbers
                                   const matriculas = arr.map(id => {
                                     const found = alunos.find(a => String(a.id) === String(id));
                                     return found ? String(found.matricula_aluno || found.matricula || found.id) : String(id);
@@ -183,14 +182,16 @@ export default function GerenciarProjetosPage() {
                                   setForm(prev => ({ ...prev, matricula_alunos: matriculas.join(','), nome_autores: names.join(', ') }));
                               }}
                             />
-                            <label className="block text-sm font-medium mt-2">Nomes dos autores (separados por vírgula)</label>
-                            <input name="nome_autores" value={form.nome_autores} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2" />
+                            <div className="mt-2 rounded border-2 border-gray-300 px-3 py-2">
+                              <label className="block text-black font-medium mt-2">Nomes dos autores <span>(separados por vírgula)</span></label>
+                              <input name="nome_autores" value={form.nome_autores} onChange={handleChange} className="w-full text-gray-500 border border border-gray-300 rounded px-3 py-3 placeholder-gray-400"/>
+                            </div>
                           </div>
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium mt-2">Tipo de projeto</label>
-                          <select name="tipo_projeto" value={form.tipo_projeto} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2">
+                          <label className="block text-black font-medium mt-2">Tipo de projeto</label>
+                          <select name="tipo_projeto" value={form.tipo_projeto} onChange={handleChange} className="w-full text-gray-500 border border-gray-300 rounded px-3 py-2" >
                             {TIPOS_PROJETO.map(tipo => (
                               <option key={tipo} value={tipo}>{tipo}</option>
                             ))}
@@ -203,7 +204,7 @@ export default function GerenciarProjetosPage() {
                       </div>
                     ) : (
                       <>
-                        <h3 className="text-lg font-semibold">{p.nome_projeto}</h3>
+                        <h3 className="text-black font-semibold">{p.nome_projeto}</h3>
                         <p className="text-sm text-gray-600">Coorientador: {p.coorientador || '—'}</p>
                         <p className="text-sm text-gray-600">Alunos: {p.nome_autores || p.matricula_alunos || '—'}</p>
                         <p className="text-sm text-gray-600">Tipo: {p.tipo_projeto || 'Integrador'}</p>

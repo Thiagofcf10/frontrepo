@@ -208,7 +208,7 @@ export default function ProjetoCard({ projeto, onEdit, onDelete, showActions = f
           <div className="absolute inset-0 bg-black opacity-40" onClick={() => setShowModal(false)} />
 
           <div className="relative z-10 max-w-2xl w-full mx-4 bg-white rounded shadow-lg p-6">
-            <h3 className="text-xl font-bold mb-2">{projeto.nome_projeto}</h3>
+            <h3 className="text-xl text-black font-bold mb-2">{projeto.nome_projeto}</h3>
                 {arquivoResumo ? (
                   <p className="text-sm text-gray-700 mb-4">{arquivoResumo}</p>
                 ) : (
@@ -218,12 +218,12 @@ export default function ProjetoCard({ projeto, onEdit, onDelete, showActions = f
             <div className="text-sm text-gray-600 space-y-1 mb-4">
               <p><strong>Orientador:</strong> {orientadorNome ?? projeto.orientador}</p>
               <p><strong>Coorientador:</strong> {projeto.coorientador || 'N/A'}</p>
-              <p><strong>Alunos:</strong> {alunoNomes.length > 0 ? alunoNomes.join(', ') : 'N/A'}</p>
+              <p><strong>Autores:</strong> {alunoNomes.length > 0 ? alunoNomes.join(', ') : 'N/A'}</p>
               <p><strong>Tipo:</strong> {projeto.tipo_projeto || 'Integrador'}</p>
             </div>
 
             <div className="flex justify-end gap-3">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 border border-gray-200">Fechar</button>
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded bg-gray-500 hover:bg-gray-400 border border-gray-200">Fechar</button>
               <button onClick={goToDetail} className="px-4 py-2 rounded bg-sky-600 hover:bg-sky-700 text-white font-semibold shadow">🔎 Ver detalhes</button>
               {arquivoResumo && (
                 <a href={`${api.getApiUrl()}/downloadarquivo/${encodeURIComponent((projeto.arquivos && projeto.arquivos[0] && projeto.arquivos[0].caminho_arquivo) ? projeto.arquivos[0].caminho_arquivo.split('/').pop() : '')}`} target="_blank" rel="noreferrer" className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold shadow">⤓ Baixar resumo</a>
