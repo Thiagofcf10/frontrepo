@@ -1,4 +1,7 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
+// Default to '/api' so frontend routes to nginx proxy when NEXT_PUBLIC_API_URL
+// is not provided at build time. Set NEXT_PUBLIC_API_URL to an absolute URL
+// to point to an external API host if needed.
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'ifpa_public_api_key_2025';
 
 export function getApiUrl() {
@@ -44,7 +47,22 @@ export function removeToken() {
 }
 
 export async function fetchWithAuth(path, options = {}) {
-  const url = path.startsWith('http') ? path : `${API_URL}${path}`;
+  // Build request URL correctly:
+  const buildUrl = (p) => {
+    if (typeof p !== 'string') return p;
+    if (p.startsWith('http')) return p;
+    // If we have an API base (e.g. '/api'), prefer to prefix it unless the path already includes it
+    if (API_URL) {
+      const base = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+      if (p.startsWith(base)) return p; // already contains base
+      if (p.startsWith('/')) return `${base}${p}`;
+      return `${base}/${p}`;
+    }
+    // No API_URL: ensure path is absolute
+    return p.startsWith('/') ? p : `/${p}`;
+  };
+
+  const url = buildUrl(path);
   const token = getToken();
 
   // Prepare headers. If body is FormData, do not set Content-Type so browser sets the correct boundary.
@@ -89,7 +107,19 @@ export async function fetchWithAuth(path, options = {}) {
  * Automatically includes the x-api-key header
  */
 export async function fetchWithApiKey(path, options = {}) {
-  const url = path.startsWith('http') ? path : `${API_URL}${path}`;
+  const buildUrl = (p) => {
+    if (typeof p !== 'string') return p;
+    if (p.startsWith('http')) return p;
+    if (API_URL) {
+      const base = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+      if (p.startsWith(base)) return p;
+      if (p.startsWith('/')) return `${base}${p}`;
+      return `${base}/${p}`;
+    }
+    return p.startsWith('/') ? p : `/${p}`;
+  };
+
+  const url = buildUrl(path);
   const apiKey = getApiKey();
 
   const headers = {
