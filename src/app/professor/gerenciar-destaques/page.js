@@ -116,8 +116,8 @@ export default function GerenciarDestaquesPage() {
     <div className="min-h-screen bg-gray-50 flex">
       <Navbar />
       <main className="flex-1 p-6">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold mb-4">⭐ Gerenciar Projetos em Destaque</h1>
+        <div className="w-full max-w-3xl mx-auto">
+          <h1 className="text-3xl text-black font-bold mb-4">⭐ Gerenciar Projetos em Destaque</h1>
 
           <p className="text-sm text-gray-600 mb-4">Marque os projetos que devem aparecer como destaque na página principal. As alterações são salvas no servidor.</p>
 

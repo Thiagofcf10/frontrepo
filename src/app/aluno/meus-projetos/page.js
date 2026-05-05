@@ -195,7 +195,7 @@ export function RegistroModal({ isOpen, onClose, projectName, registros, current
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black opacity-70" onClick={onClose} />
+      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.20)' }} onClick={onClose} />
       <div className="relative z-10 max-w-3xl w-full mx-4 bg-white rounded shadow-lg p-6 h-5/6 overflow-y-auto">
         <h3 className="text-xl text-black font-bold mb-2">Registros — {projectName}</h3>
         <div className="space-y-3 max-h-full overflow-y-auto">

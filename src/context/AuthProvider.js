@@ -8,7 +8,8 @@ const AuthContext = createContext({
   user: null,
   token: null,
   login: async () => {},
-  logout: () => {}
+  logout: () => {},
+  setToken: (t) => {}
 });
 
 export function useAuth() {
@@ -62,13 +63,49 @@ export function AuthProvider({ children }) {
     if (!res.ok) throw data;
 
     if (data.token) {
-      apiSetToken(data.token);
+      try { apiSetToken(data.token); } catch (e) {}
       setTokenState(data.token);
-      // enrich user with role (login may already include role)
-      const enriched = await enrichUserRole(data.user || null);
-      setUser(enriched || data.user || null);
+      // Attempt to verify token and populate user state from server
+      try {
+        const verifyRes = await fetchWithAuth('/verify');
+        const basic = verifyRes.user || verifyRes;
+        const enriched = await enrichUserRole(basic);
+        setUser(enriched || data.user || null);
+      } catch (e) {
+        // Fallback: use returned user payload if available
+        const enriched = await enrichUserRole(data.user || null);
+        setUser(enriched || data.user || null);
+      }
     }
+
     return data;
+  }
+
+  // Helper to set token from other flows (OTP, guest token, etc.)
+  async function setToken(t) {
+    try {
+      if (!t) {
+        apiRemoveToken();
+        setTokenState(null);
+        setUser(null);
+        return;
+      }
+      apiSetToken(t);
+      setTokenState(t);
+      try {
+        const verifyRes = await fetchWithAuth('/verify');
+        const basic = verifyRes.user || verifyRes;
+        const enriched = await enrichUserRole(basic);
+        setUser(enriched);
+        return;
+      } catch (err) {
+        apiRemoveToken();
+        setTokenState(null);
+        setUser(null);
+      }
+    } catch (err) {
+      // ignore
+    }
   }
 
   async function refreshUser() {
@@ -132,7 +169,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, login, logout, refreshUser, setToken }}>
       {children}
     </AuthContext.Provider>
   );

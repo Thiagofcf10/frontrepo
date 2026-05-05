@@ -1,140 +1,64 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/context/AuthProvider';
-import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/context/AuthProvider';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const pathname = usePathname();
-
-  // Hide title and user/logout controls on specific pages per request
-  const hideHeaderControls = pathname === '/home' || (pathname && pathname.startsWith('/professor')) || (pathname && pathname.startsWith('/aluno')) || (pathname && pathname.startsWith('/alunos')) || (pathname && pathname.startsWith('/arquivos'));
-
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
-  };
 
   return (
     <>
-      {/* Top Navbar */}
-      <nav className="bg-blue-600 text-white p-4 shadow-lg flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden text-2xl"
-          >
-            ☰
-          </button>
-          {!hideHeaderControls && (
-            <h1 className="text-xl font-bold">IFPA Projetos</h1>
-          )}
-        </div>
-        {!hideHeaderControls && (
-          <div className="flex items-center gap-4">
-            {user ? (
-              <>
-                <span className="text-sm">👤 {user.nome_usuario}</span>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm"
-                >
-                  Sair
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium">Entrar</Link>
-                <Link href="/register" className="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium">Registrar</Link>
-              </>
-            )}
-          </div>
-        )}
-      </nav>
-
-      {/* Sidebar Menu */}
-      <div
-        className={`fixed left-0 top-16 h-[calc(100vh-64px)] bg-gray-800 text-white w-64 transform transition-transform ${
-          menuOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 md:static md:h-auto md:w-69 md:flex md:flex-col md:gap-2 p-4 md:shadow-lg z-50`}
-      >
-        <div className="flex flex-col gap-2">
-          {/* Menu comum para todos */}
-          <Link href="/perfil" className="hover:bg-gray-700 p-2 rounded">
-            👤 Perfil
-          </Link>
-          <Link href="/home" className="hover:bg-gray-700 p-2 rounded">
-            🏠 Home
-          </Link>
-          <Link href="/projetos" className="hover:bg-gray-700 p-2 rounded">
-            📋 Projetos
-          </Link>
-
-          {/* Menu específico para Professores */}
-          {user?.tipo === 'professor' && (
-            <>
-              <hr className="my-2" />
-              <h3 className="text-xs uppercase tracking-widest text-gray-400">
-                Professor
-              </h3>
-              {/* Dados acadêmicos - seção separada */}
-              <div className="mt-2">
-                <h4 className="text-xs uppercase tracking-widest text-gray-400 mt-2">Dados Acadêmicos</h4>
-                <Link href="/professor/gerenciar-dados" className="hover:bg-gray-700 p-2 rounded text-sm">
-                  🧾 Gerenciar Dados
-                </Link>
-              </div>
-                  <Link href="/professor/gerenciar-projetos" className="hover:bg-gray-700 p-2 rounded text-sm">
-                    🗂️ Gerenciar Projetos
-                  </Link>
-                  <Link href="/professor/gerenciar-destaques" className="hover:bg-gray-700 p-2 rounded text-sm">
-                    ⭐ Gerenciar Destaques
-                  </Link>
-              {/* Admin link visible only to professors (opens backend admin UI) */}
-              <Link href="/admin" className="hover:bg-gray-700 p-2 rounded text-sm">
-                🛠️ Admin
-              </Link>
-              <Link href="/professor/criar-projeto" className="hover:bg-gray-700 p-2 rounded text-sm">
-                ➕ Novo Projeto
-              </Link>
-              <Link href="/professor/custos" className="hover:bg-gray-700 p-2 rounded text-sm">
-                💰 Custos
-              </Link>
-              <Link href="/professor/arquivos" className="hover:bg-gray-700 p-2 rounded text-sm">
-                📤 Arquivos
-              </Link>
-              <Link href="/professor/registros" className="hover:bg-gray-700 p-2 rounded text-sm">
-                📝 Registros de Reuniões
-              </Link>
-            </>
-          )}
-
-          {/* Menu específico para Alunos */}
-          {user?.tipo === 'aluno' && (
-            <>
-              <hr className="my-2" />
-              <h3 className="text-xs uppercase tracking-widest text-gray-400">
-                Aluno
-              </h3>
-              <Link href="/aluno/meus-projetos" className="hover:bg-gray-700 p-2 rounded text-sm">
-                📚 Meus Projetos
-              </Link>
-            </>
-          )}
-        </div>
+      {/* Mobile top compact bar with toggle */}
+      <div className="md:hidden bg-white border-b p-2 flex items-center justify-between">
+        <button onClick={() => setMenuOpen(!menuOpen)} className="text-2xl">☰</button>
       </div>
 
-      {/* Overlay para fechar menu em mobile */}
+      {/* Mobile dropdown menu */}
       {menuOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 md:hidden z-40 top-16"
-          onClick={() => setMenuOpen(false)}
-        />
+        <div className="md:hidden bg-white border-b p-2">
+          <nav className="flex flex-col gap-2 items-center">
+            <Link href="/home" className="w-full max-w-[260px] mx-auto flex items-center justify-center gap-3 px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-200 text-sm text-gray-900">🏠 Home</Link>
+            <Link href="/projetos" className="w-full max-w-[260px] mx-auto flex items-center justify-center gap-3 px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-200 text-sm text-gray-900">📋 Projetos</Link>
+            <Link href="/perfil" className="w-full max-w-[260px] mx-auto flex items-center justify-center gap-3 px-4 py-2 rounded-md bg-gray-300 hover:bg-gray-200 text-sm text-gray-900">👤 Perfil</Link>
+            {user?.tipo === 'professor' && (
+              <>
+                <Link href="/professor/gerenciar-projetos" className="w-full max-w-[260px] mx-auto flex items-center justify-center gap-3 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm text-white">🗂️ Gerenciar</Link>
+                <Link href="/professor/criar-projeto" className="w-full max-w-[260px] mx-auto flex items-center justify-center gap-3 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm text-white">➕ Criar</Link>
+                <Link href="/professor/custos" className="w-full max-w-[260px] mx-auto flex items-center justify-center gap-3 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm text-white">💰 Custos</Link>
+                <Link href="/professor/cadastro-codigo-matricula" className="w-full max-w-[260px] mx-auto flex items-center justify-center gap-3 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm text-white">🏷️ Cadastro Matrícula</Link>
+                <Link href="/professor/arquivos" className="w-full max-w-[260px] mx-auto flex items-center justify-center gap-3 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm text-white">📁 Arquivos</Link>
+                <Link href="/professor/gerenciar-destaques" className="w-full max-w-[260px] mx-auto flex items-center justify-center gap-3 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm text-white">✨ Destaques</Link>
+                <Link href="/professor/registros" className="w-full max-w-[260px] mx-auto flex items-center justify-center gap-3 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm text-white">📝 Registros</Link>
+                <Link href="/professor/gerenciar-dados" className="w-full max-w-[260px] mx-auto flex items-center justify-center gap-3 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-sm text-white">🧾 Gerenciar Dados</Link>
+              </>
+            )}
+          </nav>
+        </div>
       )}
+
+      {/* Desktop vertical compact sidebar */}
+      <aside className="hidden md:flex flex-col bg-white border-r p-3 w-16 md:w-48 flex-shrink-0 items-center">
+        <nav className="flex flex-col items-center gap-2">
+          <Link href="/home" className="w-full max-w-[220px] mx-auto flex items-center justify-center gap-3 px-3 py-2 rounded-md bg-gray-300 hover:bg-gray-400 text-sm text-gray-900">🏠 <span className="hidden md:inline">Home</span></Link>
+          <Link href="/projetos" className="w-full max-w-[220px] mx-auto flex items-center justify-center gap-3 px-3 py-2 rounded-md bg-gray-300 hover:bg-gray-400 text-sm text-gray-900">📋 <span className="hidden md:inline">Projetos</span></Link>
+          <Link href="/perfil" className="w-full max-w-[220px] mx-auto flex items-center justify-center gap-3 px-3 py-2 rounded-md bg-gray-300 hover:bg-gray-400 text-sm text-gray-900">👤 <span className="hidden md:inline">Perfil</span></Link>
+
+          {user?.tipo === 'professor' && (
+            <>
+              <Link href="/professor/gerenciar-projetos" className="w-full max-w-[220px] mx-auto flex items-center justify-center gap-3 px-3 py-2 rounded-md bg-indigo-500 hover:bg-indigo-700 text-sm text-white">🗂️ <span className="hidden md:inline">Gerenciar</span></Link>
+              <Link href="/professor/criar-projeto" className="w-full max-w-[220px] mx-auto flex items-center justify-center gap-3 px-3 py-2 rounded-md bg-indigo-500 hover:bg-indigo-700 text-sm text-white">➕ <span className="hidden md:inline">Criar</span></Link>
+              <Link href="/professor/custos" className="w-full max-w-[220px] mx-auto flex items-center justify-center gap-3 px-3 py-2 rounded-md bg-indigo-500 hover:bg-indigo-700 text-sm text-white">💰 <span className="hidden md:inline">Custos</span></Link>
+              <Link href="/professor/cadastro-codigo-matricula" className="w-full max-w-[220px] mx-auto flex items-center justify-center gap-3 px-3 py-2 rounded-md bg-indigo-500 hover:bg-indigo-700 text-sm text-white">🏷️ <span className="hidden md:inline">Cadastro Matrícula</span></Link>
+              <Link href="/professor/arquivos" className="w-full max-w-[220px] mx-auto flex items-center justify-center gap-3 px-3 py-2 rounded-md bg-indigo-500 hover:bg-indigo-700 text-sm text-white">📁 <span className="hidden md:inline">Arquivos</span></Link>
+              <Link href="/professor/gerenciar-destaques" className="w-full max-w-[220px] mx-auto flex items-center justify-center gap-3 px-3 py-2 rounded-md bg-indigo-500 hover:bg-indigo-700 text-sm text-white">✨ <span className="hidden md:inline">Destaques</span></Link>
+              <Link href="/professor/registros" className="w-full max-w-[220px] mx-auto flex items-center justify-center gap-3 px-3 py-2 rounded-md bg-indigo-500 hover:bg-indigo-700 text-sm text-white">📝 <span className="hidden md:inline">Registros</span></Link>
+              <Link href="/professor/gerenciar-dados" className="w-full max-w-[220px] mx-auto flex items-center justify-center gap-3 px-3 py-2 rounded-md bg-indigo-500 hover:bg-indigo-700 text-sm text-white">🧾 <span className="hidden md:inline">Gerenciar Dados</span></Link>
+            </>
+          )}
+        </nav>
+      </aside>
     </>
   );
 }

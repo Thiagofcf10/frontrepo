@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import api, { fetchWithApiKey } from '@/lib/api';
+import { TIPOS_PROJETO } from '@/lib/constants';
 
 // Simple in-memory cache to avoid repeated network calls for the same professor
 const professorNameCache = {};
@@ -163,11 +164,29 @@ export default function ProjetoCard({ projeto, onEdit, onDelete, showActions = f
         role="button"
         tabIndex={0}
         title={`Ver detalhes do projeto ${projeto.nome_projeto}`}
-        className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500"
+        className="bg-white rounded-lg shadow-lg hover:shadow-gray-600 transition-shadow duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500 overflow-hidden"
       >
-        <h3 className="text-lg font-bold text-gray-800">{projeto.nome_projeto}</h3>
-        
-        <div className="mt-3 text-sm text-gray-600 space-y-1">
+        {/* Top banner: fills the top of the card and highlights the project title based on tipo_projeto */}
+        {(() => {
+          const tipoRaw = (projeto && projeto.tipo_projeto) ? String(projeto.tipo_projeto) : 'Integrador';
+          // normalize to one of the known constants; fallback to 'Integrador'
+          const tipo = TIPOS_PROJETO.includes(tipoRaw) ? tipoRaw : (TIPOS_PROJETO.includes(String(tipoRaw).trim()) ? String(tipoRaw).trim() : 'Integrador');
+          const colorMap = {
+            'Integrador': 'bg-sky-600 text-white',
+            'Graduação': 'bg-indigo-600 text-white',
+            'Extensão': 'bg-violet-600 text-white',
+            'Pesquisa': 'bg-emerald-600 text-white',
+            'Outro': 'bg-gray-600 text-white'
+          };
+          const bannerClass = colorMap[tipo] || colorMap['Integrador'];
+          return (
+            <div className={`${bannerClass} w-full px-4 py-3 font-bold`}>
+              <div className="truncate text-sm">{projeto.nome_projeto}</div>
+            </div>
+          );
+        })()}
+
+        <div className="p-4 text-sm text-gray-600 space-y-1">
           <p><strong>Orientador:</strong> {orientadorNome ?? projeto.orientador}</p>
           <p><strong>Coorientador:</strong> {projeto.coorientador || 'N/A'}</p>
           <p><strong>Alunos:</strong> {alunoNomes.length > 0 ? alunoNomes.join(', ') : 'N/A'}</p>
@@ -207,13 +226,31 @@ export default function ProjetoCard({ projeto, onEdit, onDelete, showActions = f
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black opacity-40" onClick={() => setShowModal(false)} />
 
-          <div className="relative z-10 max-w-2xl w-full mx-4 bg-white rounded shadow-lg p-6">
-            <h3 className="text-xl text-black font-bold mb-2">{projeto.nome_projeto}</h3>
-                {arquivoResumo ? (
-                  <p className="text-sm text-gray-700 mb-4">{arquivoResumo}</p>
-                ) : (
-                  <p className="text-sm text-gray-600 mb-4">Resumo não disponível.</p>
-                )}
+
+          <div className="relative z-10 max-w-2xl w-full mx-4 bg-white rounded shadow-2xl p-6">
+            {/* Banner inside modal — same coloring as the card, but flush with modal edges */}
+            {(() => {
+              const tipoRaw = (projeto && projeto.tipo_projeto) ? String(projeto.tipo_projeto) : 'Integrador';
+              const tipo = TIPOS_PROJETO.includes(tipoRaw) ? tipoRaw : (TIPOS_PROJETO.includes(String(tipoRaw).trim()) ? String(tipoRaw).trim() : 'Integrador');
+              const colorMap = {
+                'Integrador': 'bg-sky-600 text-white',
+                'Graduação': 'bg-indigo-600 text-white',
+                'Extensão': 'bg-violet-600 text-white',
+                'Pesquisa': 'bg-emerald-600 text-white',
+                'Outro': 'bg-gray-600 text-white'
+              };
+              const bannerClass = colorMap[tipo] || colorMap['Integrador'];
+              return (
+                <div className={`${bannerClass} -mx-6 mt-0 mb-4 px-6 py-3 font-bold rounded-t-lg`}>
+                  <div className="truncate text-lg">{projeto.nome_projeto}</div>
+                </div>
+              );
+            })()}
+            {arquivoResumo ? (
+              <p className="text-sm text-gray-700 mb-4">{arquivoResumo}</p>
+            ) : (
+              <p className="text-sm text-gray-600 mb-4">Resumo não disponível.</p>
+            )}
 
             <div className="text-sm text-gray-600 space-y-1 mb-4">
               <p><strong>Orientador:</strong> {orientadorNome ?? projeto.orientador}</p>

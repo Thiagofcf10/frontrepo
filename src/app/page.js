@@ -16,10 +16,11 @@ export default function LandingPage() {
       setLoading(true);
       try {
         const apiKey = api.getApiKey();
-        const resp = await fetchWithApiKey(`${api.getApiUrl()}/selectprojetos_publicos?api_key=${apiKey}`);
+        // Load only featured projects for the landing page
+        const resp = await fetchWithApiKey(`${api.getApiUrl()}/selectprojetos_destaques?api_key=${apiKey}`);
         setProjetos(resp && resp.data ? resp.data : []);
       } catch (err) {
-        console.error('Erro ao carregar projetos públicos:', err);
+        console.error('Erro ao carregar projetos em destaque:', err);
         setProjetos([]);
       } finally {
         setLoading(false);

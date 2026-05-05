@@ -18,7 +18,20 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password);
+      const data = await login(email, password);
+
+      if (data && data.twoFactorRequired) {
+        setMsg(`Código enviado para ${data.email || email}. Verifique seu e-mail.`);
+        router.push(`/auth/verify-otp?email=${encodeURIComponent(data.email || email)}&purpose=login`);
+        return;
+      }
+
+      if (data && data.token) {
+        router.push('/home');
+        return;
+      }
+
+      // fallback: proceed to home if no explicit response
       router.push('/home');
     } catch (err) {
       // err may be a string or an object
@@ -66,15 +79,19 @@ export default function LoginPage() {
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
-
         {msg && <p className="mt-4 text-sm text-red-600 text-center">{msg}</p>}
 
-        <p className="text-center mt-6 text-sm text-gray-600">
-          Não tem conta?{' '}
-          <a href="/register" className="text-blue-500 hover:underline">
-            Registre-se
+        <div className="flex justify-between items-center mt-4 text-sm">
+          <p className="text-gray-600">
+            Não tem conta?{' '}
+            <a href="/register" className="text-blue-500 hover:underline">
+              Registre-se
+            </a>
+          </p>
+          <a href="/auth/request-otp?purpose=password_reset" className="text-blue-500 hover:underline">
+            Esqueci a senha
           </a>
-        </p>
+        </div>
       </div>
     </main>
   );

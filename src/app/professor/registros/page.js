@@ -18,6 +18,7 @@ export default function RegistrosPage() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingRegistroId, setEditingRegistroId] = useState(null);
   const [formData, setFormData] = useState({
     id_projeto: '',
     data_reuniao: '',
@@ -68,6 +69,8 @@ export default function RegistrosPage() {
     loadRegistros(projetoId);
   };
 
+  const selectedProject = projetos.find(p => String(p.id) === String(selectedProjetoId));
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -88,30 +91,49 @@ export default function RegistrosPage() {
     }
 
     try {
-      await fetchWithAuth(`${api.getApiUrl()}/inserirregistro`, {
-        method: 'POST',
-        body: JSON.stringify({
-          id_projeto: parseInt(selectedProjetoId),
-          data_reuniao: formData.data_reuniao,
-          lista_participantes: formData.lista_participantes,
-          duracao_reuniao: formData.duracao_reuniao,
-          titulo_reuniao: formData.titulo_reuniao,
-          relatorio: formData.relatorio,
-          relatorio_edit_deadline: formData.relatorio_edit_deadline || null,
-          relatorio_edit_allowed: formData.relatorio_edit_allowed || null
-        })
-      });
+      // If editingRegistroId is set, update instead of insert
+      if (editingRegistroId) {
+        await fetchWithAuth(`${api.getApiUrl()}/atualizarregistro/${editingRegistroId}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            id_projeto: parseInt(selectedProjetoId),
+            data_reuniao: formData.data_reuniao,
+            lista_participantes: formData.lista_participantes,
+            duracao_reuniao: formData.duracao_reuniao,
+            titulo_reuniao: formData.titulo_reuniao,
+            relatorio: formData.relatorio,
+            relatorio_edit_deadline: formData.relatorio_edit_deadline || null,
+            relatorio_edit_allowed: formData.relatorio_edit_allowed || null
+          })
+        });
+        setToast({ type: 'success', message: 'Reunião atualizada com sucesso' });
+      } else {
+        await fetchWithAuth(`${api.getApiUrl()}/inserirregistro`, {
+          method: 'POST',
+          body: JSON.stringify({
+            id_projeto: parseInt(selectedProjetoId),
+            data_reuniao: formData.data_reuniao,
+            lista_participantes: formData.lista_participantes,
+            duracao_reuniao: formData.duracao_reuniao,
+            titulo_reuniao: formData.titulo_reuniao,
+            relatorio: formData.relatorio,
+            relatorio_edit_deadline: formData.relatorio_edit_deadline || null,
+            relatorio_edit_allowed: formData.relatorio_edit_allowed || null
+          })
+        });
+        setToast({ type: 'success', message: 'Reunião registrada com sucesso' });
+      }
 
-      setToast({ type: 'success', message: 'Reunião registrada com sucesso' });
       setFormData({
         id_projeto: selectedProjetoId,
         data_reuniao: '',
         lista_participantes: '',
         duracao_reuniao: '00:00:00',
-        titulo_reuniao: ''
-        , relatorio: ''
+        titulo_reuniao: '',
+        relatorio: ''
       });
       setModalOpen(false);
+      setEditingRegistroId(null);
       loadRegistros(selectedProjetoId);
     } catch (err) {
       setToast({ type: 'error', message: err.message || 'Erro ao registrar reunião' });
@@ -177,9 +199,14 @@ export default function RegistrosPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Navbar />
-      
+
       <main className="flex-1 p-6">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">📝 Registros de Reuniões</h1>
+        {selectedProject && (
+          <div className="mb-4 inline-block px-3 py-1 rounded bg-blue-50 border border-blue-200 text-sm text-blue-700">
+            Projeto selecionado: <strong className="ml-1">{selectedProject.nome_projeto}</strong>
+          </div>
+        )}
 
         {loading ? (
           <div className="text-center py-12">
@@ -198,13 +225,12 @@ export default function RegistrosPage() {
                   <button
                     key={projeto.id}
                     onClick={() => handleSelectProjeto(projeto.id)}
-                    className={`p-3 rounded-lg border-2 text-left transition ${
-                      selectedProjetoId === String(projeto.id)
+                    className={`p-3 rounded-lg border-2 text-left transition ${selectedProjetoId === String(projeto.id)
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                      }`}
                   >
-                   <div className="font-semibold text-black">{projeto.nome_projeto}</div>
+                    <div className="font-semibold text-black">{projeto.nome_projeto}</div>
                     <div className="text-xs text-gray-600">Autores: {projeto.nome_autores}</div>
                     <div className="text-xs text-gray-600">Tipo do projeto: {projeto.tipo_projeto}</div>
                   </button>
@@ -270,6 +296,26 @@ export default function RegistrosPage() {
                             </div>
                             <div className="flex flex-col gap-2 ml-2">
                               <button
+                                onClick={() => {
+                                  // open edit modal populated with registro
+                                  setEditingRegistroId(registro.id);
+                                  setFormData({
+                                    id_projeto: registro.id_projeto || selectedProjetoId,
+                                    data_reuniao: registro.data_reuniao ? registro.data_reuniao.split('T')[0] : '',
+                                    lista_participantes: registro.lista_participantes || '',
+                                    duracao_reuniao: registro.duracao_reuniao || '00:00:00',
+                                    titulo_reuniao: registro.titulo_reuniao || '',
+                                    relatorio: registro.relatorio || '',
+                                    relatorio_edit_deadline: registro.relatorio_edit_deadline || '',
+                                    relatorio_edit_allowed: registro.relatorio_edit_allowed || ''
+                                  });
+                                  setModalOpen(true);
+                                }}
+                                className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm"
+                              >
+                                ✏️ Editar
+                              </button>
+                              <button
                                 onClick={() => handleDeleteRegistro(registro.id)}
                                 className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
                               >
@@ -295,6 +341,8 @@ export default function RegistrosPage() {
           confirmText="Registrar"
           onConfirm={handleAddRegistro}
           className="opa"
+          overlayClassName="fixed inset-0 z-40"
+          overlayStyle={{ backgroundColor: 'rgba(0,0,0,0.40)' }}
         >
           <div className="space-y-4">
             <div>

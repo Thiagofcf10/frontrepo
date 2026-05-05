@@ -1,20 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/context/AuthProvider';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useAuth } from '@/context/AuthProvider';
 import Navbar from '@/components/Navbar';
 import ProjetoCard from '@/components/ProjetoCard';
 import api, { fetchWithApiKey } from '@/lib/api';
 
 export default function HomePage() {
   const { user, token } = useAuth();
-  const router = useRouter();
   const [projetos, setProjetos] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
   const [meusProjetos, setMeusProjetos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('todos'); // 'todos' ou 'meus'
+  const [hasEditableRelatorios, setHasEditableRelatorios] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // Always load public projects for the home page so visitors can see published projects.
@@ -26,8 +27,10 @@ export default function HomePage() {
   const loadProjetos = async () => {
     setLoading(true);
     try {
-      // Carregar apenas projetos publicados para a exibição pública da Home
-      // Use o endpoint público que retorna somente projetos publicados
+      // Carregar todos os projetos publicados para a aba 'Todos os Projetos'
+      const allRes = await fetchWithApiKey(`${api.getApiUrl()}/selectprojetos`);
+      setAllProjects(allRes.data || []);
+
       // Carregar apenas projetos marcados como destaque (selecionados pelos professores)
       const destaquesRes = await fetchWithApiKey(`${api.getApiUrl()}/selectprojetos_destaques`);
       setProjetos(destaquesRes.data || []);
@@ -42,6 +45,32 @@ export default function HomePage() {
           console.error('Erro ao carregar meus projetos:', err);
         }
       }
+      // If user is aluno, check if there are registros with editable relatorio allowed for this student
+      if (user?.id && user?.tipo === 'aluno') {
+        try {
+          const regsRes = await fetchWithApiKey(`${api.getApiUrl()}/selectregistros`);
+          const alunosRes = await fetchWithApiKey(`${api.getApiUrl()}/selectaluno`);
+          const registros = regsRes.data || [];
+          const alunos = alunosRes.data || [];
+          const aluno = alunos.find(a => Number(a.usuario_id) === Number(user.id));
+          if (aluno) {
+            const now = new Date();
+            const canEditAny = registros.some(r => {
+              const allowedTokens = r.relatorio_edit_allowed ? String(r.relatorio_edit_allowed).split(',').map(t => String(t).trim()).filter(Boolean) : [];
+              if (allowedTokens.length === 0) return false;
+              const idStr = String(aluno.id);
+              const matStr = String(aluno.matricula_aluno);
+              if (!(allowedTokens.includes(idStr) || allowedTokens.includes(matStr))) return false;
+              const deadline = r.relatorio_edit_deadline ? new Date(r.relatorio_edit_deadline) : null;
+              if (deadline && now > deadline) return false;
+              return true;
+            });
+            setHasEditableRelatorios(!!canEditAny);
+          }
+        } catch (e) {
+          console.error('Erro ao verificar relatórios editáveis:', e);
+        }
+      }
       
     } catch (err) {
       console.error('Erro ao carregar projetos:', err);
@@ -54,35 +83,30 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50 flex">
       <Navbar />
       <main className="flex-1 p-6">
-        <div className="max-w-7xl">
+       
+          {/* quick menu removed as requested */}
+        
           {/* Hero / header */}
-          <section className="bg-white rounded-lg shadow p-6 mb-6">
+          <section className="bg-gradient-to-b from-sky-500 to-sky-50 rounded-lg shadow p-6 mb-6">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Bem-vindo, {user?.nome_usuario || 'Usuário'}!</h1>
                 <p className="text-gray-600 mt-1">{user?.tipo === 'professor' ? 'Professor' : 'Aluno'}</p>
               </div>
               <div className="flex items-center gap-3">
-                {/* Perfil link moved to sidebar; removed button here per request */}
+                {/* Quick actions for alunos: link to Meus Projetos / editar relatórios quando permitido */}
+                {user?.tipo === 'aluno' && (
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => router.push('/aluno/meus-projetos')} className="bg-sky-600 text-white px-3 py-2 rounded text-sm">📚 Meus Projetos</button>
+                    {hasEditableRelatorios && (
+                      <button onClick={() => router.push('/aluno/meus-projetos')} className="bg-green-600 text-white px-3 py-2 rounded text-sm">✏️ Editar Relatórios</button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             {/* search removed to match professor layout */}
-            {/* Quick admin menu (shows for logged-in professors) */}
-            {user && user.tipo === 'professor' && (
-              <section className="mt-6 bg-white rounded-lg shadow p-4">
-                <h3 className="text-lg text-gray-700  font-semibold mb-2">Painel Rápido</h3>
-                <p className="text-sm text-gray-600 mb-4">Acesse rapidamente as páginas de cadastro e gerenciamento de projetos.</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  <Link href="/professor/criar-projeto" className="px-3 py-2 bg-sky-600 text-white rounded text-sm text-center">➕ Criar Projeto</Link>
-                  <Link href="/professor/gerenciar-projetos" className="px-3 py-2 bg-amber-600 text-white rounded text-sm text-center">🛠️ Gerenciar Projetos</Link>
-                  <Link href="/professor/meus-projetos" className="px-3 py-2 bg-emerald-600 text-white rounded text-sm text-center">📚 Meus Projetos</Link>
-                  <Link href="/professor/gerenciar-destaques" className="px-3 py-2 bg-purple-600 text-white rounded text-sm text-center">⭐ Gerenciar Destaques</Link>
-                  <Link href="/professor/arquivos" className="px-3 py-2 bg-gray-600 text-white rounded text-sm text-center">📁 Arquivos</Link>
-                  <Link href="/professor/custos" className="px-3 py-2 bg-rose-600 text-white rounded text-sm text-center">💰 Custos</Link>
-                  <Link href="/professor/registros" className="px-3 py-2 bg-indigo-600 text-white rounded text-sm text-center">📝 Registros</Link>
-                </div>
-              </section>
-            )}
+            {/* Quick admin menu removed for professor pages as requested */}
           </section>
 
           {/* Tabs */}
@@ -114,38 +138,62 @@ export default function HomePage() {
             <div className="text-center py-12">
               <div className="text-2xl">⏳ Carregando...</div>
             </div>
-          ) : activeTab === 'todos' ? (
-            <section>
-              <h2 className="text-2xl text-gray-700 font-bold mb-4">Projetos em Destaque</h2>
-              {projetos.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <p>Nenhum projeto disponível ainda.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {projetos.map(projeto => (
-                    <ProjetoCard key={projeto.id} projeto={projeto} />
-                  ))}
-                </div>
-              )}
-            </section>
           ) : (
-            <section>
-              <h2 className="text-2xl text-gray-700 font-bold mb-4">Meus Projetos</h2>
-              {meusProjetos.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <p>Você não está vinculado a nenhum projeto ainda.</p>
-                </div>
+            <>
+              {/* Destaques sempre visíveis no topo da home */}
+              <section className="mb-6">
+                <h2 className="text-2xl text-gray-700 font-bold mb-4">Projetos em Destaque</h2>
+                {projetos.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <p>Nenhum projeto em destaque.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {projetos.map(projeto => (
+                      <ProjetoCard key={projeto.id} projeto={projeto} />
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              {/* Aba de conteúdo: Todos ou Meus */}
+              {activeTab === 'todos' ? (
+                <section>
+                  <h2 className="text-2xl text-gray-700 font-bold mb-4">Todos os Projetos</h2>
+                  {allProjects.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <p>Nenhum projeto disponível ainda.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {allProjects.map(p => (
+                        <ProjetoCard key={p.id} projeto={p} />
+                      ))}
+                    </div>
+                  )}
+                </section>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {meusProjetos.map(p => (
-                    <ProjetoCard key={p.id} projeto={p} />
-                  ))}
-                </div>
+                <section>
+                  <h2 className="text-2xl text-gray-700 font-bold mb-4">Meus Projetos</h2>
+                  {meusProjetos.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <p>Você não está vinculado a nenhum projeto ainda.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {meusProjetos.map(p => (
+                        <ProjetoCard key={p.id} projeto={p} />
+                      ))}
+                    </div>
+                  )}
+                </section>
               )}
-            </section>
+            </>
           )}
-        </div>
+
+      
+
+
       </main>
     </div>
   );

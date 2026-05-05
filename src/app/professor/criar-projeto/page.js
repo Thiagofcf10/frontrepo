@@ -124,9 +124,10 @@ export default function CriarProjetoPage() {
       <Navbar />
       
       <main className="flex-1 p-6">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">➕ Criar Novo Projeto</h1>
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-3xl font-bold mb-6 text-gray-800">➕ Criar Novo Projeto</h1>
 
-        <div className="bg-white rounded-lg shadow p-6 max-w-2xl">
+          <div className="bg-white rounded-lg shadow p-6 w-full">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Projeto *</label>
@@ -240,9 +241,12 @@ export default function CriarProjetoPage() {
             </div>
           </form>
         </div>
+        
+        </div>
       </main>
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
+  
   );
 }

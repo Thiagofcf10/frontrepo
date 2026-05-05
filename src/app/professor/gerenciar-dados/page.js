@@ -88,9 +88,10 @@ export default function GerenciarDados() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Navbar />
-      <main className="flex-1 p-6 max-w-4xl mx-auto">
-        <h1 className="text-2xl text-black  font-bold mb-4">Gerenciar Dados Acadêmicos</h1>
-        <p className="text-sm text-gray-600 mb-6">Adicione áreas, turmas e cursos (caso ainda não exista no sistema).</p>
+      <main className="flex-1 p-6">
+        <div className="w-full max-w-3xl mx-auto">
+          <h1 className="text-2xl text-black  font-bold mb-4">Gerenciar Dados Acadêmicos</h1>
+          <p className="text-sm text-gray-600 mb-6">Adicione áreas, turmas e cursos (caso ainda não exista no sistema).</p>
 
         <section className="bg-white rounded shadow p-6 mb-6">
           <h2 className="text-black font-semibold mb-3">Nova Área Acadêmica</h2>
@@ -155,7 +156,8 @@ export default function GerenciarDados() {
           </form>
         </section>
 
-        {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+          {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+        </div>
       </main>
     </div>
   );

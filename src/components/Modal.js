@@ -1,13 +1,16 @@
 'use client';
 
-export default function Modal({ isOpen, title, children, onClose, confirmText = 'Confirmar', onConfirm, loading = false }) {
+export default function Modal({ isOpen, title, children, onClose, confirmText = 'Confirmar', onConfirm, loading = false, overlayClassName, overlayStyle }) {
   if (!isOpen) return null;
+
+  const overlayClass = overlayClassName || 'fixed inset-0 bg-black bg-opacity-20 z-40';
 
   return (
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+        className={overlayClass}
+        style={overlayStyle}
         onClick={onClose}
       />
 

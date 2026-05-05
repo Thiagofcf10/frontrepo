@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthProvider';
 import { useRouter } from 'next/navigation';
 import Toast from '@/components/Toast';
 import api from '@/lib/api';
@@ -18,6 +19,7 @@ export default function RegisterPage() {
     telefone_aluno: '',
     // Campos para professor
     matricula_professor: '',
+    codigo_matricula: '',
     id_area: '',
     telefone_professor: ''
   });
@@ -27,6 +29,7 @@ export default function RegisterPage() {
   const [cursos, setCursos] = useState([]);
   const [areas, setAreas] = useState([]);
   const router = useRouter();
+  const { setToken, refreshUser } = useAuth();
 
   // Buscar cursos e áreas para os selects
   const loadFormOptions = async () => {
@@ -85,6 +88,11 @@ export default function RegisterPage() {
         setMsg('Selecione um curso');
         return false;
       }
+      // enforce 11 digits for aluno
+      if (String(formData.matricula_aluno).trim().length !== 11) {
+        setMsg('Matrícula do aluno deve conter exatamente 11 dígitos');
+        return false;
+      }
     } else if (formData.tipo === 'professor') {
       if (!formData.matricula_professor) {
         setMsg('Matrícula é obrigatória');
@@ -92,6 +100,16 @@ export default function RegisterPage() {
       }
       if (!formData.id_area) {
         setMsg('Selecione uma área acadêmica');
+        return false;
+      }
+      // professor matricula max 15
+      if (String(formData.matricula_professor).trim().length > 15) {
+        setMsg('Matrícula do professor deve ter no máximo 15 dígitos');
+        return false;
+      }
+      // codigo_matricula is required to register as professor
+      if (!formData.codigo_matricula || String(formData.codigo_matricula).trim() === '') {
+        setMsg('Código de matrícula do professor é obrigatório para registro como professor');
         return false;
       }
     }
@@ -156,10 +174,24 @@ export default function RegisterPage() {
       }
 
       const loginData = await loginRes.json();
+      // If backend requires 2FA, redirect user to OTP verification instead of continuing
+      if (loginData && loginData.twoFactorRequired) {
+        setMsgType('info');
+        setMsg(`Um código foi enviado para ${loginData.email || formData.email}. Verifique seu e-mail para concluir o registro.`);
+        // Store full form data so verify-otp can resume creating aluno/professor after OTP
+        try {
+          localStorage.setItem('postRegisterUserEmail', formData.email);
+          localStorage.setItem('tempRegisterData', JSON.stringify(formData));
+        } catch (e) {}
+        router.push(`/auth/verify-otp?email=${encodeURIComponent(loginData.email || formData.email)}&purpose=login`);
+        setLoading(false);
+        return;
+      }
       const tokenNew = loginData.token;
-      // Salvar token no localStorage para uso posterior
+      // Store token using auth helper so global state updates
       if (tokenNew) {
-        localStorage.setItem('token', tokenNew);
+        try { if (typeof setToken === 'function') await setToken(tokenNew); } catch (e) {}
+        try { if (typeof refreshUser === 'function') await refreshUser(); } catch (e) {}
       }
 
       const usuarioId = loginData.user?.id || createdUser.user?.id || createdUser.id;
@@ -175,7 +207,7 @@ export default function RegisterPage() {
           credentials: 'include',
           body: JSON.stringify({
             nome_aluno: formData.nome_usuario,
-            matricula_aluno: parseInt(formData.matricula_aluno),
+              matricula_aluno: String(formData.matricula_aluno),
             id_curso: parseInt(formData.id_curso),
             usuario_id: usuarioId,
             telefone: formData.telefone_aluno || ''
@@ -193,8 +225,9 @@ export default function RegisterPage() {
           credentials: 'include',
           body: JSON.stringify({
             nome_professor: formData.nome_usuario,
-            matricula_professor: parseInt(formData.matricula_professor),
+            matricula_professor: String(formData.matricula_professor),
             id_area: parseInt(formData.id_area),
+            codigo_matricula: formData.codigo_matricula,
             usuario_id: usuarioId,
             telefone: formData.telefone_professor || ''
           })
@@ -304,6 +337,7 @@ export default function RegisterPage() {
             >
               <div className="text-lg font-semibold">🧑‍🏫 Professor</div>
               <div className="text-sm text-gray-600">Criar e gerenciar projetos</div>
+              <div className="text-xs text-red-500 mt-2">Observação: Para registrar-se como professor é necessário informar um código de matrícula válido.</div>
             </button>
           </div>
         )}
@@ -320,11 +354,11 @@ export default function RegisterPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Matrícula</label>
                   <input
-                    type="number"
+                    type="text"
                     name="matricula_aluno"
                     value={formData.matricula_aluno}
                     onChange={handleInputChange}
-                    placeholder="Sua matrícula"
+                    placeholder="Sua matrícula (11 dígitos)"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -359,15 +393,27 @@ export default function RegisterPage() {
             ) : (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Matrícula</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Digite sua matrícula</label>
                   <input
-                    type="number"
+                    type="text"
                     name="matricula_professor"
                     value={formData.matricula_professor}
                     onChange={handleInputChange}
-                    placeholder="Sua matrícula"
+                    placeholder="Digite sua matrícula (até 15 caracteres)"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Código do professor (obrigatório)</label>
+                  <input
+                    type="text"
+                    name="codigo_matricula"
+                    value={formData.codigo_matricula}
+                    onChange={handleInputChange}
+                    placeholder="Código do professor"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Digite sua matrícula e o código do professor fornecido pela administração.</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Área Acadêmica</label>

@@ -65,6 +65,8 @@ export default function CustosPage() {
     loadCustos(projetoId);
   };
 
+  const selectedProject = projetos.find(p => String(p.id) === String(selectedProjetoId));
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -126,6 +128,11 @@ export default function CustosPage() {
       
       <main className="flex-1 p-6">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">💰 Gerenciar Custos</h1>
+        {selectedProject && (
+          <div className="mb-4 inline-block px-3 py-1 rounded bg-blue-50 border border-blue-200 text-sm text-blue-700">
+            Projeto selecionado: <strong className="ml-1">{selectedProject.nome_projeto}</strong>
+          </div>
+        )}
 
         {loading ? (
           <div className="text-center py-12">
@@ -211,6 +218,8 @@ export default function CustosPage() {
           onClose={() => setModalOpen(false)}
           confirmText="Adicionar"
           onConfirm={handleAddCusto}
+          overlayClassName="fixed inset-0 z-40"
+          overlayStyle={{ backgroundColor: 'rgba(0,0,0,0.40)' }}
         >
           <div className="space-y-3">
             <div>
